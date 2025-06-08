@@ -1,6 +1,16 @@
 {
   "name": "my-v0-project",
   "version": "0.1.0",
+  "overrides": {
+    "react-day-picker": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "vaul": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",
