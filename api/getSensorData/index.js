@@ -1,30 +1,44 @@
+const { TableClient } = require("@azure/data-tables");
+
 module.exports = async function (context, req) {
     const stationId = req.query.stationId || 'wisnu';
     
-    // Untuk testing, return mock data dulu
-    const mockData = {
-        stationId: stationId,
-        latest: {
-            temperature: 25.5,
-            humidity: 60,
-            soilMoisture: 75,
-            soilMoistureRaw: 2000,
-            isRaining: false,
-            rainIntensity: 0,
-            timestamp: new Date().toISOString()
-        },
-        message: "Mock data - Table Storage belum disetup"
-    };
-    
-    context.res = {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*' // Untuk CORS
-        },
-        body: mockData
-    };
+    try {
+        const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+        const tableName = "SensorData";
+        const tableClient = TableClient.fromConnectionString(connectionString, tableName);
+        
+        // Query latest data
+        const results = tableClient.listEntities({
+            queryOptions: {
+                filter: `PartitionKey eq '${stationId}'`,
+                select: ["temperature", "humidity", "soilMoisture", "timestamp"]
+            }
+        });
+        
+        let latest = null;
+        for await (const entity of results) {
+            if (!latest || entity.timestamp > latest.timestamp) {
+                latest = entity;
+            }
+        }
+        
+        context.res = {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: {
+                stationId: stationId,
+                latest: latest || { message: "No data found" }
+            }
+        };
+    } catch (error) {
+        context.log.error('Error:', error);
+        context.res = {
+            status: 500,
+            body: "Error retrieving data"
+        };
+    }
 };
-
-
-//test
