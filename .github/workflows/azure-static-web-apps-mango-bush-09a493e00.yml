@@ -6,8 +6,12 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches:
+    branches:  
       - master
+    paths-ignore:
+      - 'api/**'
+      - '.github/workflows/master_atamagri-functions.yml'
+      - '*.md'
 
 jobs:
   build_and_deploy_job:
