@@ -1,9 +1,10 @@
+const { TableClient } = require("@azure/data-tables");
+
 module.exports = async function (context, req) {
     context.log('Receiving sensor data from ESP32');
     
     const data = req.body;
     
-    // Validasi data
     if (!data || !data.stationId) {
         context.res = {
             status: 400,
@@ -12,21 +13,43 @@ module.exports = async function (context, req) {
         return;
     }
     
-    // Tambahkan timestamp
-    data.timestamp = new Date().toISOString();
-    
-    // Untuk testing dulu, return success
-    context.res = {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: {
-            message: "Data received successfully",
-            timestamp: data.timestamp,
-            received: data
-        }
-    };
-    
-    // TODO: Nanti tambahkan code untuk save ke Table Storage
+    try {
+        // Connect to Table Storage
+        const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+        const tableName = "SensorData";
+        const tableClient = TableClient.fromConnectionString(connectionString, tableName);
+        
+        // Prepare entity
+        const entity = {
+            partitionKey: data.stationId,
+            rowKey: new Date().getTime().toString(),
+            temperature: data.temperature || 0,
+            humidity: data.humidity || 0,
+            soilMoisture: data.soilMoisture || 0,
+            soilMoistureRaw: data.soilMoistureRaw || 0,
+            isRaining: data.isRaining || false,
+            rainIntensity: data.rainIntensity || 0,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Save to table
+        await tableClient.createEntity(entity);
+        
+        context.res = {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: {
+                message: "Data saved successfully",
+                timestamp: entity.timestamp
+            }
+        };
+    } catch (error) {
+        context.log.error('Error saving data:', error);
+        context.res = {
+            status: 500,
+            body: "Error saving data"
+        };
+    }
 };
