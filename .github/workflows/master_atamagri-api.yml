@@ -9,7 +9,7 @@ on:
       - master
     paths:
       - 'api/**'
-      - '.github/workflows/master_atamagri-functions.yml'
+      - '.github/workflows/master_atamagri-api.yml'
   workflow_dispatch:
 
 env:
