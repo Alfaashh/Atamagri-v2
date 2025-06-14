@@ -19,7 +19,7 @@ module.exports = async function (context, req) {
         const tableName = "SensorData";
         const tableClient = TableClient.fromConnectionString(connectionString, tableName);
         
-        // Prepare entity
+        // Prepare entity - PENTING: gunakan camelCase untuk Azure Table
         const entity = {
             partitionKey: data.stationId,
             rowKey: new Date().getTime().toString(),
@@ -38,18 +38,27 @@ module.exports = async function (context, req) {
         context.res = {
             status: 200,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
             },
             body: {
                 message: "Data saved successfully",
-                timestamp: entity.timestamp
+                timestamp: entity.timestamp,
+                rowKey: entity.rowKey
             }
         };
     } catch (error) {
-        context.log.error('Error saving data:', error);
+        context.log.error('Error saving data:', error.message);
         context.res = {
             status: 500,
-            body: "Error saving data"
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: {
+                error: "Error saving data",
+                details: error.message
+            }
         };
     }
 };
