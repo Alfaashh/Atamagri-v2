@@ -9,6 +9,10 @@ on:
       - '.github/workflows/master_atamagri-api.yml'
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './api'
   NODE_VERSION: '20.x'
