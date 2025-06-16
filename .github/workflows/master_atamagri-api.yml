@@ -9,13 +9,17 @@ on:
       - '.github/workflows/master_atamagri-api.yml'
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './api'
   NODE_VERSION: '20.x'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
       - name: 'Checkout GitHub Action'
@@ -26,42 +30,56 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package.json'
 
       - name: 'Resolve Project Dependencies Using Npm'
+        shell: pwsh
         run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
           npm run build --if-present
           npm prune --production
+          popd
 
-      - name: Zip artifact for deployment
+      - name: 'Prepare deployment package'
+        shell: pwsh
         run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r ../function-app.zip . -x "*.git*" "*.vscode*" "local.settings.json"
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          # Remove unnecessary files
+          Remove-Item -Path .git -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path .vscode -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path local.settings.json -Force -ErrorAction SilentlyContinue
+          popd
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: function-app
-          path: function-app.zip
+          name: node-app
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
-    environment:
-      name: 'production'
     
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: function-app
+          name: node-app
+          path: .
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0FCF6A55D87F4A6BA0B5E98A32296351 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1F65E6D45B4646DA91E7538895A8DC51 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5A270F2A7E3E4C85A9465A6054BA23C7 }}
 
-      - name: 'Deploy to Azure Function App'
-        id: deploy-to-function-app
-        uses: azure/webapps-deploy@v2
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
         with:
           app-name: 'atamagri-api'
           slot-name: 'Production'
-          package: 'function-app.zip'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          package: '.'
+          respect-funcignore: true
