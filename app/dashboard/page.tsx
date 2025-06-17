@@ -253,7 +253,8 @@ const DEFAULT_STATIONS = [
 
 export default function Dashboard() {
   const [selectedStation, setSelectedStation] = useState<string | null>(null)
-  const [userStations, setUserStations] = useState(DEFAULT_STATIONS);
+  const [userStations, setUserStations] = useState(DEFAULT_STATIONS)
+  const [now, setNow] = useState(Date.now())
   const [activeView, setActiveView] = useState("dashboard")
   const [showPassword, setShowPassword] = useState(false)
   const [calibrationData, setCalibrationData] = useState({
@@ -267,6 +268,13 @@ export default function Dashboard() {
   const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
   const { history: firebaseHistory } = useFirebaseHistory('wisnu', 20);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 60 * 1000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+  
   useEffect(() => {
     if (firebaseData && !firebaseLoading) {
       // Update station wisnu dengan real-time data dari Firebase
@@ -289,7 +297,7 @@ export default function Dashboard() {
             },
             status: firebaseError ? "inactive" : "active",
             lastUpdate: firebaseData.timestamp 
-              ? `${Math.max(0, Math.floor((Date.now() - firebaseData.timestamp) / 60000))} minutes ago` 
+              ? `${Math.max(0, Math.floor((now - firebaseData.timestamp) / 60000))} minutes ago` 
               : "Unknown"
           };
         }
