@@ -478,15 +478,19 @@ export default function Dashboard() {
           <div className="text-center p-2 bg-gray-50 rounded">
             <p className="text-xs text-gray-500">Temperature</p>
             <p className="font-semibold text-gray-900">
-              {station.status === "active" ? `${station.sensors.temperature.value}°C` : "N/A"}
+              {station.status === "active"
+                ? `${Number(station.sensors.temperature.value).toFixed(1)}°C`
+                : "N/A"}
             </p>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded">
             <p className="text-xs text-gray-500">Humidity</p>
             <p className="font-semibold text-gray-900">
-              {station.status === "active" ? `${station.sensors.humidity.value}%` : "N/A"}
+              {station.status === "active"
+                ? `${Number(station.sensors.humidity.value).toFixed(1)}%`
+                : "N/A"}
             </p>
-          </div>
+          </div>          
         </div>
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center">
