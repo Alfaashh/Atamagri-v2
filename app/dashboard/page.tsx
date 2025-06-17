@@ -64,6 +64,9 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import Link from "next/link"
 import { useState } from "react"
+import { useFirebaseCurrentData, useFirebaseHistory } from '@/hooks/useFirebaseData';
+import { sendDummyData, startDummyDataGenerator } from '@/lib/dummyDataGenerator';
+import { useEffect } from "react";
 
 // Mock data for charts
 const temperatureData = [
@@ -260,6 +263,63 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState("last7days")
   const [exportFormat, setExportFormat] = useState("csv")
 
+  const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
+  const { history: firebaseHistory } = useFirebaseHistory('wisnu', 20);
+
+  useEffect(() => {
+    if (firebaseData && !firebaseLoading) {
+      // Update station wisnu dengan real-time data dari Firebase
+      const stationIndex = userStations.findIndex(s => s.id === 'wisnu');
+      if (stationIndex !== -1) {
+        userStations[stationIndex].sensors = {
+          temperature: { value: firebaseData.temperature, unit: "°C", status: "normal" },
+          humidity: { value: firebaseData.humidity, unit: "RH", status: "normal" },
+          light: { value: 44.17, unit: "Lux", status: "normal" }, // Keep mock for now
+          solarCurrent: { value: -0.2, unit: "mA", status: "normal" }, // Keep mock
+          solarVoltage: { value: 1.09, unit: "mV", status: "normal" }, // Keep mock
+          solarWatt: { value: 0, unit: "mW", status: "normal" }, // Keep mock
+          wind: { value: 0, unit: "Knot", status: "normal" }, // Keep mock
+          rain: { value: firebaseData.rainIntensity, unit: "mm", status: firebaseData.isRaining ? "warning" : "normal" },
+        };
+        userStations[stationIndex].status = firebaseError ? "inactive" : "active";
+        userStations[stationIndex].lastUpdate = firebaseData.timestamp 
+          ? `${Math.floor((Date.now() - firebaseData.timestamp) / 60000)} minutes ago` 
+          : "Unknown";
+      }
+    }
+  }, [firebaseData, firebaseLoading, firebaseError]);
+  
+  // Update chart data dengan Firebase history
+  useEffect(() => {
+    if (firebaseHistory && firebaseHistory.length > 0) {
+      // Update temperature data
+      temperatureData.splice(0, temperatureData.length);
+      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+        temperatureData.push({
+          time: `${index * 4}:00`,
+          value: item.temperature
+        });
+      });
+  
+      // Update humidity data
+      humidityData.splice(0, humidityData.length);
+      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+        humidityData.push({
+          time: `${index * 4}:00`,
+          value: item.humidity
+        });
+      });
+
+      rainData.splice(0, rainData.length);
+      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+        rainData.push({
+          time: `${index * 4}:00`,
+          value: item.rainIntensity
+        });
+      });
+    }
+  }, [firebaseHistory]);      
+  
   // Calculate summary data
   const activeStationsCount = userStations.filter((station) => station.status === "active").length
   const avgTemperature =
@@ -271,6 +331,14 @@ export default function Dashboard() {
       .filter((station) => station.status === "active")
       .reduce((sum, station) => sum + station.sensors.humidity.value, 0) / activeStationsCount
 
+  const handleFirebaseRefresh = async () => {
+    try {
+      await sendDummyData('wisnu');
+    } catch (error) {
+      console.error('Refresh error:', error);
+    }
+  };
+      
   const handleCalibrationUpdate = (sensor: string, field: string, value: number) => {
     setCalibrationData((prev) => ({
       ...prev,
@@ -603,7 +671,11 @@ export default function Dashboard() {
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={selectedStation === 'wisnu' ? handleFirebaseRefresh : undefined}
+                      >
                       <RefreshCw className="w-4 h-4 mr-2" />
                       Refresh
                     </Button>
