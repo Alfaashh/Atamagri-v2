@@ -253,6 +253,7 @@ const userStations = [
 
 export default function Dashboard() {
   const [selectedStation, setSelectedStation] = useState<string | null>(null)
+  const [userStations, setUserStations] = useState<StationType[]>([]);
   const [activeView, setActiveView] = useState("dashboard")
   const [showPassword, setShowPassword] = useState(false)
   const [calibrationData, setCalibrationData] = useState({
