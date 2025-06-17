@@ -887,7 +887,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <SensorCard
                         title="Temperature"
-                        value={currentStation.sensors.temperature.value}
+                        value={Number(currentStation.sensors.temperature.value).toFixed(1)}
                         unit="°C"
                         icon={Thermometer}
                         color="text-blue-600"
@@ -897,7 +897,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Kelembapan"
-                        value={currentStation.sensors.humidity.value}
+                        value={Number(currentStation.sensors.humidity.value).toFixed(1)}
                         unit="RH"
                         icon={Droplets}
                         color="text-green-600"
@@ -907,7 +907,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Intensitas Cahaya"
-                        value={currentStation.sensors.light.value}
+                        value={Number(currentStation.sensors.light.value).toFixed(1)}
                         unit="Lux"
                         icon={Sun}
                         color="text-orange-600"
@@ -917,7 +917,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Arus Solar Cell"
-                        value={currentStation.sensors.solarCurrent.value}
+                        value={Number(currentStation.sensors.solarCurrent.value).toFixed(1)}
                         unit="mA"
                         icon={Zap}
                         color="text-green-600"
@@ -927,7 +927,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Tegangan Solar"
-                        value={currentStation.sensors.solarVoltage.value}
+                        value={Number(currentStation.sensors.solarVoltage.value).toFixed(1)}
                         unit="mV"
                         icon={Gauge}
                         color="text-orange-600"
@@ -937,7 +937,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Watt Solar Cell"
-                        value={currentStation.sensors.solarWatt.value}
+                        value={Number(currentStation.sensors.solarWatt.value).toFixed(1)}
                         unit="mW"
                         icon={Zap}
                         color="text-orange-600"
@@ -947,7 +947,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Wind"
-                        value={currentStation.sensors.wind.value}
+                        value={Number(currentStation.sensors.wind.value).toFixed(1)}
                         unit="Knot"
                         icon={Wind}
                         color="text-green-600"
@@ -957,7 +957,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Rain Gauge"
-                        value={currentStation.sensors.rain.value}
+                        value={Number(currentStation.sensors.rain.value).toFixed(1)}
                         unit="mm"
                         icon={CloudRain}
                         color="text-blue-600"
