@@ -188,7 +188,7 @@ const newsArticles = [
 ]
 
 // Mock stations data
-const userStations = [
+const DEFAULT_STATIONS = [
   {
     id: "wisnu",
     name: "wisnu",
@@ -253,7 +253,7 @@ const userStations = [
 
 export default function Dashboard() {
   const [selectedStation, setSelectedStation] = useState<string | null>(null)
-  const [userStations, setUserStations] = useState<StationType[]>([]);
+  const [userStations, setUserStations] = useState(DEFAULT_STATIONS);
   const [activeView, setActiveView] = useState("dashboard")
   const [showPassword, setShowPassword] = useState(false)
   const [calibrationData, setCalibrationData] = useState({
