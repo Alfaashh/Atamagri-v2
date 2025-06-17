@@ -289,7 +289,7 @@ export default function Dashboard() {
             },
             status: firebaseError ? "inactive" : "active",
             lastUpdate: firebaseData.timestamp 
-              ? `${Math.floor((Date.now() - firebaseData.timestamp) / 60000)} minutes ago` 
+              ? `${Math.max(0, Math.floor((Date.now() - firebaseData.timestamp) / 60000))} minutes ago` 
               : "Unknown"
           };
         }
