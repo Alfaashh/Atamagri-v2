@@ -66,6 +66,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { useFirebaseCurrentData, useFirebaseHistory } from '@/hooks/useFirebaseData';
 import { sendDummyData, startDummyDataGenerator } from '@/lib/dummyDataGenerator';
+import { timeAgo } from "@/lib/timeAgo";
 import { useEffect } from "react";
 
 // Mock data for charts
@@ -191,7 +192,7 @@ const newsArticles = [
 const DEFAULT_STATIONS = [
   {
     id: "wisnu",
-    name: "wisnu",
+    name: "Stasiun Test Wisnu",
     location: "Solo",
     status: "active",
     lastUpdate: "2 minutes ago",
@@ -214,7 +215,7 @@ const DEFAULT_STATIONS = [
     name: "Stasiun Test 2",
     location: "Jakarta",
     status: "active",
-    lastUpdate: "5 minutes ago",
+    lastUpdate: "5 days ago",
     sensors: {
       temperature: { value: 33.8, unit: "°C", status: "warning" },
       humidity: { value: 62.3, unit: "RH", status: "normal" },
@@ -297,7 +298,7 @@ export default function Dashboard() {
             },
             status: firebaseError ? "inactive" : "active",
             lastUpdate: firebaseData.timestamp 
-              ? `${Math.max(0, Math.floor((now - firebaseData.timestamp) / 60000))} minutes ago` 
+              ? timeAgo(firebaseData.timestamp)
               : "Unknown"
           };
         }
