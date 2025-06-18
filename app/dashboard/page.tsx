@@ -235,7 +235,7 @@ const DEFAULT_STATIONS = [
     name: "Stasiun 1 - Jakarta",
     location: "Jakarta",
     status: "inactive",
-    lastUpdate: "2 days ago",
+    lastUpdate: "3 weeks ago",
     sensors: {
       temperature: { value: 0, unit: "°C", status: "error" },
       humidity: { value: 0, unit: "RH", status: "error" },
