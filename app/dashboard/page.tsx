@@ -153,7 +153,7 @@ const weatherForecast = [
   { time: "03:00", temp: 22, wind: 5, rain: 20, humidity: 85, icon: "🌧️" },
 ]
 
-const droneData = [
+const droneData = {
   id: "tello-001",
   name: "DJI Tello",
   status: "connected",
@@ -173,7 +173,7 @@ const droneData = [
     confidence: 87.5,
     timestamp: "2 days ago"
   }
-]
+}
 
 // News articles data
 const newsArticles = [
