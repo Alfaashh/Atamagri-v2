@@ -810,11 +810,12 @@ export default function Dashboard() {
                     </CardTitle>
                     <CardDescription>Distribusi geografis stasiun cuaca Anda</CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[300px] bg-gray-100 flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500">Tampilan peta stasiun Anda akan muncul di sini</p>
-                    </div>
+                    <CardContent className="h-[300px] bg-gray-100 flex items-center justify-center">
+                      <img
+                        src="/assets/map.png"
+                        alt="Dummy Peta Stasiun"
+                        className="h-full max-h-[280px] w-auto rounded shadow"
+                      />
                   </CardContent>
                 </Card>
               </>
