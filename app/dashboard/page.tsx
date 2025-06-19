@@ -61,9 +61,18 @@ import {
   Layers,
   Activity,
   TreePine,
+  Plane,
+  Camera,
+  Battery,
+  Radio,
+  Navigation,
+  CircuitBoard,
+  Shield,
+  Target,
 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import Link from "next/link"
+import DroneControl from "@/components/drone-control"
 import { useState } from "react"
 import { useFirebaseCurrentData, useFirebaseHistory } from '@/hooks/useFirebaseData';
 import { sendDummyData, startDummyDataGenerator } from '@/lib/dummyDataGenerator';
@@ -142,6 +151,28 @@ const weatherForecast = [
   { time: "21:00", temp: 26, wind: 4, rain: 0, humidity: 75, icon: "🌙" },
   { time: "00:00", temp: 24, wind: 3, rain: 0, humidity: 80, icon: "🌙" },
   { time: "03:00", temp: 22, wind: 5, rain: 20, humidity: 85, icon: "🌧️" },
+]
+
+const droneData = [
+  id: "tello-001",
+  name: "DJI Tello",
+  status: "connected",
+  battery: 85,
+  signal: 92,
+  altitude: 0,
+  speed: 0,
+  flightTime: "00:00:00",
+  lastMission: "Field Survey - Zone A",
+  location: "Solo, Central Java",
+  isFlying: false,
+  diseaseDetections: 15,
+  areasScanned: "2.5 ha",
+  lastDetection: {
+    plant: "Tomato",
+    condition: "Late blight",
+    confidence: 87.5,
+    timestamp: "2 days ago"
+  }
 ]
 
 // News articles data
@@ -619,6 +650,24 @@ export default function Dashboard() {
                       Dashboard
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        setActiveView("drone")
+                        setSelectedStation(null)
+                      }}
+                      isActive={activeView === "drone"}
+                    >
+                      <Plane className="w-4 h-4" />
+                      Drone Control
+                      <Badge 
+                        variant={droneData.status === "connected" ? "default" : "secondary"}
+                        className="ml-auto text-xs"
+                      >
+                        {droneData.status === "connected" ? "Online" : "Offline"}
+                      </Badge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -846,6 +895,84 @@ export default function Dashboard() {
                   </Card>
                 </div>
 
+                {/* Drone Status Section */}
+                <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Plane className="w-6 h-6 text-purple-600" />
+                      <span>Drone Operations</span>
+                      <Badge variant={droneData.status === "connected" ? "default" : "secondary"}>
+                        {droneData.status === "connected" ? "Online" : "Offline"}
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>AI-powered agricultural surveillance and disease detection</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <Battery className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-600">Battery</p>
+                        <p className="text-lg font-bold text-gray-900">{droneData.battery}%</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <Radio className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-600">Signal</p>
+                        <p className="text-lg font-bold text-gray-900">{droneData.signal}%</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <Target className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-600">Detections</p>
+                        <p className="text-lg font-bold text-gray-900">{droneData.diseaseDetections}</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <CircuitBoard className="w-6 h-6 text-orange-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-600">Area Scanned</p>
+                        <p className="text-lg font-bold text-gray-900">{droneData.areasScanned}</p>
+                      </div>
+                    </div>
+                    {droneData.lastDetection && (
+                      <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
+                        <h4 className="font-semibold text-gray-900 mb-2">Latest Disease Detection</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                          <div>
+                            <span className="text-gray-500">Plant:</span>
+                            <span className="ml-1 font-medium">{droneData.lastDetection.plant}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Condition:</span>
+                            <span className="ml-1 font-medium text-orange-600">{droneData.lastDetection.condition}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Confidence:</span>
+                            <span className="ml-1 font-medium">{droneData.lastDetection.confidence}%</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Time:</span>
+                            <span className="ml-1 font-medium">{droneData.lastDetection.timestamp}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        className="bg-purple-600 hover:bg-purple-700"
+                        onClick={() => setActiveView("drone")}
+                      >
+                        <Plane className="w-4 h-4 mr-2" />
+                        Launch Drone Control
+                      </Button>
+                      <Button variant="outline">
+                        <Camera className="w-4 h-4 mr-2" />
+                        View Mission History
+                      </Button>
+                      <Button variant="outline">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Safety Settings
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
                 {/* Quick Actions */}
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" className="bg-green-600 hover:bg-green-700">
@@ -962,6 +1089,7 @@ export default function Dashboard() {
                     <TabsTrigger value="sensors">Sensor</TabsTrigger>
                     <TabsTrigger value="forecast">Prakiraan Cuaca</TabsTrigger>
                     <TabsTrigger value="articles">Artikel</TabsTrigger>
+                    <TabsTrigger value="drone">Drone</TabsTrigger>
                   </TabsList>
                   <TabsContent value="sensors" className="space-y-6">
                     {/* ===== 8 SENSOR CARDS WITH CORRECT DATA ===== */}
@@ -1222,6 +1350,14 @@ export default function Dashboard() {
                       </CardContent>
                     </Card>
                   </TabsContent>
+
+                  <TabsContent value="drone" className="mt-4">
+                      <Card>
+                        <CardContent className="pt-6">
+                          <DroneControl />
+                        </CardContent>
+                      </Card>
+                    </TabsContent>                  
                 </Tabs>
               </>
             )}
@@ -1427,6 +1563,142 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {activeView === "drone" && (
+              <div className="space-y-6">
+                {/* Drone Header */}
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">Drone Control Center</h2>
+                      <p className="text-purple-100">AI-powered agricultural surveillance and disease detection</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-purple-100">Status</p>
+                      <div className="flex items-center mt-1">
+                        <div className={`w-3 h-3 rounded-full mr-2 ${
+                          droneData.status === "connected" ? "bg-green-400 animate-pulse" : "bg-red-400"
+                        }`}></div>
+                        <span className="font-medium capitalize">{droneData.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Drone Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Battery className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Battery</p>
+                      <p className="text-xl font-bold">{droneData.battery}%</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Radio className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Signal</p>
+                      <p className="text-xl font-bold">{droneData.signal}%</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Navigation className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Altitude</p>
+                      <p className="text-xl font-bold">{droneData.altitude}m</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Gauge className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Speed</p>
+                      <p className="text-xl font-bold">{droneData.speed} km/h</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Target className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Detections</p>
+                      <p className="text-xl font-bold">{droneData.diseaseDetections}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <CircuitBoard className="w-8 h-8 text-teal-600 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600">Area</p>
+                      <p className="text-xl font-bold">{droneData.areasScanned}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Main Drone Control Interface */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Plane className="w-5 h-5" />
+                      <span>Live Drone Control</span>
+                    </CardTitle>
+                    <CardDescription>Real-time drone operation and disease detection</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DroneControl />
+                  </CardContent>
+                </Card>
+
+                {/* Mission History */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <FileText className="w-5 h-5" />
+                      <span>Recent Missions</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Field Survey - Zone A</p>
+                            <p className="text-sm text-gray-500">Completed • 15 detections • 2.5 ha</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">2 hours ago</p>
+                          <Button variant="outline" size="sm">View Report</Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Perimeter Check - North Field</p>
+                            <p className="text-sm text-gray-500">Completed • 8 detections • 1.8 ha</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">1 day ago</p>
+                          <Button variant="outline" size="sm">View Report</Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Emergency Survey - Zone C</p>
+                            <p className="text-sm text-gray-500">In Progress • 23 detections • 3.2 ha</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">3 days ago</p>
+                          <Button variant="outline" size="sm">View Report</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {activeView === "settings" && (
