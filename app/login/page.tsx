@@ -34,28 +34,28 @@ export default function LoginPage() {
             </div>
             <span className="text-3xl font-bold text-green-800">Atamagri</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to access your agricultural dashboard</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Selamat Datang Kembali</h1>
+          <p className="text-gray-600">Masuk untuk mengakses dashboard pertanian Anda</p>
         </div>
 
         {/* Login Form */}
         <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-xl">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl text-center text-gray-900">Sign In</CardTitle>
+            <CardTitle className="text-xl text-center text-gray-900">Masuk</CardTitle>
             <CardDescription className="text-center text-gray-600">
-              Enter your credentials to access your account
+              Masukkan kredensial Anda untuk mengakses akun
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700">
-                  Email or Username
+                  Email atau Username
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email or username"
+                  placeholder="Masukkan email atau username Anda"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="border-green-200 focus:border-green-500 focus:ring-green-500"
@@ -65,13 +65,13 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700">
-                  Password
+                  Kata Sandi
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Masukkan kata sandi Anda"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="border-green-200 focus:border-green-500 focus:ring-green-500 pr-10"
@@ -95,31 +95,31 @@ export default function LoginPage() {
                     className="rounded border-green-300 text-green-600 focus:ring-green-500"
                   />
                   <Label htmlFor="remember" className="text-sm text-gray-600">
-                    Remember me
+                    Ingat saya
                   </Label>
                 </div>
                 <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700">
-                  Forgot Password?
+                  Lupa Kata Sandi?
                 </Link>
               </div>
 
               <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
-                Sign In
+                Masuk
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Belum punya akun?{" "}
                 <Link href="/signup" className="text-green-600 hover:text-green-700 font-medium">
-                  Sign Up
+                  Daftar
                 </Link>
               </p>
             </div>
 
             <div className="mt-4 text-center">
               <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-                ← Back to Home
+                ← Kembali ke Beranda
               </Link>
             </div>
           </CardContent>
@@ -129,11 +129,11 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="pt-4">
-              <p className="text-sm text-blue-800 mb-2">Demo Access</p>
-              <p className="text-xs text-blue-600 mb-3">Use demo credentials to explore the dashboard</p>
+              <p className="text-sm text-blue-800 mb-2">Akses Demo</p>
+              <p className="text-xs text-blue-600 mb-3">Gunakan kredensial demo untuk menjelajahi dashboard</p>
               <Link href="/dashboard">
                 <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-100">
-                  Access Demo Dashboard
+                  Akses Demo Dashboard
                 </Button>
               </Link>
             </CardContent>
