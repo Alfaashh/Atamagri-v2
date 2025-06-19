@@ -159,7 +159,7 @@ const newsArticles = [
     title: "Mengoptimalkan Irigasi Padi di Musim Kemarau",
     category: "Tanaman",
     excerpt: "Pelajari teknik manajemen air yang efektif untuk budidaya padi selama periode kekeringan.",
-    image: "/public/assets/drought.png",
+    image: "/assets/drought.png",
     readTime: "5 menit baca",
   },
   {
@@ -167,7 +167,7 @@ const newsArticles = [
     title: "Pola Cuaca dan Perencanaan Tanaman",
     category: "Cuaca",
     excerpt: "Memahami perubahan cuaca musiman untuk perencanaan pertanian dan pengambilan keputusan yang lebih baik.",
-    image: "/public/assets/weather.png",
+    image: "/assets/weather.png",
     readTime: "7 menit baca",
   },
   {
@@ -175,7 +175,7 @@ const newsArticles = [
     title: "Teknik Manajemen Kesehatan Tanah",
     category: "Tanah",
     excerpt: "Praktik penting untuk menjaga kesuburan tanah dan meningkatkan hasil panen secara berkelanjutan.",
-    image: "/public/assets/soil.png",
+    image: "/assets/soil.png",
     readTime: "6 menit baca",
   },
   {
@@ -183,7 +183,7 @@ const newsArticles = [
     title: "Strategi Pengendalian Hama Terpadu",
     category: "Hama",
     excerpt: "Pendekatan efektif untuk mengendalikan hama sambil meminimalkan dampak lingkungan di lahan pertanian.",
-    image: "/oublic/assets/pest.png",
+    image: "/assets/pest.png",
     readTime: "8 menit baca",
   },
 ]
