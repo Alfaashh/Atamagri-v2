@@ -1,6 +1,0 @@
-node_modules/
-test/
-.vscode/
-.git/
-local.settings.json
-*.log
