@@ -40,8 +40,8 @@ export default function FirebaseTestDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Firebase Test Dashboard</h1>
-          <p className="text-gray-600">Real-time sensor data from Firebase</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Test Firebase</h1>
+          <p className="text-gray-600">Data sensor real-time dari Firebase</p>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -50,13 +50,13 @@ export default function FirebaseTestDashboard() {
             disabled={loading}
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            Segarkan
           </Button>
           <Button 
             onClick={toggleGenerator}
             variant={isGenerating ? "destructive" : "default"}
           >
-            {isGenerating ? "Stop Generator" : "Start Generator"}
+            {isGenerating ? "Hentikan Generator" : "Mulai Generator"}
           </Button>
         </div>
       </div>
@@ -69,17 +69,17 @@ export default function FirebaseTestDashboard() {
               {error ? (
                 <>
                   <WifiOff className="w-5 h-5 text-red-500" />
-                  <span className="text-red-500">Disconnected</span>
+                  <span className="text-red-500">Terputus</span>
                 </>
               ) : (
                 <>
                   <Wifi className="w-5 h-5 text-green-500" />
-                  <span className="text-green-500">Connected to Firebase</span>
+                  <span className="text-green-500">Terhubung ke Firebase</span>
                 </>
               )}
             </div>
             <Badge variant={isGenerating ? "default" : "secondary"}>
-              {isGenerating ? "Generating Data" : "Generator Stopped"}
+              {isGenerating ? "Menghasilkan Data" : "Generator Berhenti"}
             </Badge>
           </div>
           {error && (
@@ -92,7 +92,7 @@ export default function FirebaseTestDashboard() {
       {loading && (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading data from Firebase...</p>
+          <p className="mt-4 text-gray-600">Memuat data dari Firebase...</p>
         </div>
       )}
 
@@ -105,7 +105,7 @@ export default function FirebaseTestDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Temperature</p>
+                    <p className="text-sm font-medium text-gray-600">Suhu</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {currentData.temperature.toFixed(1)}°C
                     </p>
@@ -120,7 +120,7 @@ export default function FirebaseTestDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Humidity</p>
+                    <p className="text-sm font-medium text-gray-600">Kelembaban</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {currentData.humidity.toFixed(1)}%
                     </p>
@@ -135,7 +135,7 @@ export default function FirebaseTestDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Soil Moisture</p>
+                    <p className="text-sm font-medium text-gray-600">Kelembaban Tanah</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {currentData.soilMoisture.toFixed(1)}%
                     </p>
@@ -150,12 +150,12 @@ export default function FirebaseTestDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Rain Status</p>
+                    <p className="text-sm font-medium text-gray-600">Status Hujan</p>
                     <p className="text-xl font-bold text-gray-900">
-                      {currentData.isRaining ? "Raining" : "No Rain"}
+                      {currentData.isRaining ? "Hujan" : "Tidak Hujan"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Intensity: {currentData.rainIntensity.toFixed(1)}%
+                      Intensitas: {currentData.rainIntensity.toFixed(1)}%
                     </p>
                   </div>
                   <CloudRain className={`w-8 h-8 ${currentData.isRaining ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -167,19 +167,19 @@ export default function FirebaseTestDashboard() {
           {/* History */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Readings</CardTitle>
-              <CardDescription>Last {history.length} sensor readings</CardDescription>
+              <CardTitle>Pembacaan Terbaru</CardTitle>
+              <CardDescription>{history.length} pembacaan sensor terakhir</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2">Time</th>
-                      <th className="text-left p-2">Temp</th>
-                      <th className="text-left p-2">Humidity</th>
-                      <th className="text-left p-2">Soil</th>
-                      <th className="text-left p-2">Rain</th>
+                      <th className="text-left p-2">Waktu</th>
+                      <th className="text-left p-2">Suhu</th>
+                      <th className="text-left p-2">Kelembaban</th>
+                      <th className="text-left p-2">Tanah</th>
+                      <th className="text-left p-2">Hujan</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -188,14 +188,14 @@ export default function FirebaseTestDashboard() {
                         <td className="p-2">
                           {reading.timestamp 
                             ? new Date(reading.timestamp).toLocaleTimeString() 
-                            : 'N/A'}
+                            : 'T/A'}
                         </td>
                         <td className="p-2">{reading.temperature.toFixed(1)}°C</td>
                         <td className="p-2">{reading.humidity.toFixed(1)}%</td>
                         <td className="p-2">{reading.soilMoisture.toFixed(1)}%</td>
                         <td className="p-2">
                           <Badge variant={reading.isRaining ? "default" : "secondary"}>
-                            {reading.isRaining ? "Yes" : "No"}
+                            {reading.isRaining ? "Ya" : "Tidak"}
                           </Badge>
                         </td>
                       </tr>
