@@ -121,7 +121,7 @@ export default function AtamagriLanding() {
       </header>
 
       {/* Hero Section - MOBILE OPTIMIZED */}
-      <section className="py-8 sm:py-12 lg:py-20">
+      <section className="py-8 sm:py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="order-2 lg:order-1 space-y-6 lg:space-y-8">
@@ -406,7 +406,7 @@ export default function AtamagriLanding() {
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Memberdayakan Komunitas Pertanian</h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
-              Melayani petani, nelayan, dan peneliti dengan solusi yang disesuaikan
+              Melayani petani dan peneliti dengan solusi yang disesuaikan
             </p>
           </div>
 
@@ -431,10 +431,10 @@ export default function AtamagriLanding() {
                   <Droplets className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-base sm:text-lg font-semibold text-gray-900">Nelayan</div>
+                  <div className="text-base sm:text-lg font-semibold text-gray-900">Perkebunan</div>
                 </div>
                 <p className="text-sm sm:text-base text-gray-600">
-                  Pastikan operasi aman dengan prakiraan cuaca akurat dan kondisi laut
+                  Pastikan kualitas hasil kebun yang terbaik
                 </p>
               </CardContent>
             </Card>
@@ -497,15 +497,15 @@ export default function AtamagriLanding() {
                   ))}
                 </div>
                 <p className="text-sm sm:text-base text-gray-700 italic">
-                  "Peringatan cuaca menyelamatkan armada nelayan kami dari badai berbahaya. Keselamatan dan produktivitas meningkat signifikan."
+                  "Deteksi hama sangat membantu melihat penyakit buah."
                 </p>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   </div>
                   <div>
-                    <div className="text-sm sm:text-base font-semibold text-gray-900">Ahmad Wijaya</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Nelayan, Jawa Timur</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">Ahmad Wiranto</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Petani Buah, Jawa Timur</div>
                   </div>
                 </div>
               </CardContent>
