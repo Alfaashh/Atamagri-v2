@@ -60,6 +60,7 @@ import {
   Filter,
   Layers,
   Activity,
+  TreePine,
 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import Link from "next/link"
@@ -69,7 +70,16 @@ import { sendDummyData, startDummyDataGenerator } from '@/lib/dummyDataGenerator
 import { timeAgo } from "@/lib/timeAgo";
 import { useEffect } from "react";
 
-// Mock data for charts
+// ===== LIGHT INTENSITY DUMMY GENERATOR =====
+const LIGHT_BASE_VALUE = 450.0; // Base lux for indoor auditorium
+const LIGHT_VARIANCE = 5.0; // ±5 lux variance
+
+const generateLightIntensity = () => {
+  const variance = (Math.random() - 0.5) * 2 * LIGHT_VARIANCE; // -5 to +5
+  return parseFloat((LIGHT_BASE_VALUE + variance).toFixed(1));
+};
+
+// ===== CHART DATA ARRAYS =====
 const temperatureData = [
   { time: "00:00", value: 24.5 },
   { time: "04:00", value: 22.8 },
@@ -88,58 +98,40 @@ const humidityData = [
   { time: "20:00", value: 69.8 },
 ]
 
-const lightData = [
+const soilMoistureData = [
+  { time: "00:00", value: 45.2 },
+  { time: "04:00", value: 43.8 },
+  { time: "08:00", value: 38.4 },
+  { time: "12:00", value: 35.1 },
+  { time: "16:00", value: 37.3 },
+  { time: "20:00", value: 41.8 },
+]
+
+const windSpeedData = [
   { time: "00:00", value: 0 },
-  { time: "04:00", value: 5.2 },
-  { time: "08:00", value: 28.7 },
-  { time: "12:00", value: 44.17 },
-  { time: "16:00", value: 32.5 },
-  { time: "20:00", value: 8.3 },
+  { time: "04:00", value: 2.3 },
+  { time: "08:00", value: 5.8 },
+  { time: "12:00", value: 3.2 },
+  { time: "16:00", value: 4.1 },
+  { time: "20:00", value: 1.5 },
 ]
 
-const solarCurrentData = [
-  { time: "00:00", value: 0 },
-  { time: "04:00", value: -0.1 },
-  { time: "08:00", value: -0.15 },
-  { time: "12:00", value: -0.2 },
-  { time: "16:00", value: -0.18 },
-  { time: "20:00", value: -0.05 },
-]
-
-const solarVoltageData = [
-  { time: "00:00", value: 0.2 },
-  { time: "04:00", value: 0.5 },
-  { time: "08:00", value: 0.85 },
-  { time: "12:00", value: 1.09 },
-  { time: "16:00", value: 0.95 },
-  { time: "20:00", value: 0.4 },
-]
-
-const solarWattData = [
+const rainIntensityData = [
   { time: "00:00", value: 0 },
   { time: "04:00", value: 0 },
-  { time: "08:00", value: 0 },
+  { time: "08:00", value: 2.1 },
   { time: "12:00", value: 0 },
-  { time: "16:00", value: 0 },
+  { time: "16:00", value: 1.3 },
   { time: "20:00", value: 0 },
 ]
 
-const windData = [
-  { time: "00:00", value: 0 },
-  { time: "04:00", value: 2 },
-  { time: "08:00", value: 5 },
-  { time: "12:00", value: 0 },
-  { time: "16:00", value: 3 },
-  { time: "20:00", value: 1 },
-]
-
-const rainData = [
-  { time: "00:00", value: 0 },
-  { time: "04:00", value: 0 },
-  { time: "08:00", value: 0 },
-  { time: "12:00", value: 0 },
-  { time: "16:00", value: 0 },
-  { time: "20:00", value: 0 },
+const lightIntensityData = [
+  { time: "00:00", value: 447.3 },
+  { time: "04:00", value: 452.1 },
+  { time: "08:00", value: 448.9 },
+  { time: "12:00", value: 453.7 },
+  { time: "16:00", value: 449.2 },
+  { time: "20:00", value: 451.8 },
 ]
 
 // Weather forecast data
@@ -188,7 +180,7 @@ const newsArticles = [
   },
 ]
 
-// Mock stations data
+// ===== STATION DATA WITH CORRECT 8 SENSORS =====
 const DEFAULT_STATIONS = [
   {
     id: "wisnu",
@@ -198,13 +190,13 @@ const DEFAULT_STATIONS = [
     lastUpdate: "2 menit yang lalu",
     sensors: {
       temperature: { value: 0, unit: "°C", status: "normal" },
-      humidity: { value: 0, unit: "RH", status: "normal" },
-      light: { value: 0, unit: "Lux", status: "normal" },
-      solarCurrent: { value: 0, unit: "mA", status: "normal" },
-      solarVoltage: { value: 0, unit: "mV", status: "normal" },
-      solarWatt: { value: 0, unit: "mW", status: "normal" },
-      wind: { value: 0, unit: "Knot", status: "normal" },
-      rain: { value: 0, unit: "mm", status: "normal" },
+      airHumidity: { value: 0, unit: "%", status: "normal" },
+      soilMoisture: { value: 0, unit: "%", status: "normal" },
+      windSpeed: { value: 0, unit: "km/h", status: "normal" },
+      rainIntensity: { value: 0, unit: "mm", status: "normal" },
+      lightIntensity: { value: generateLightIntensity(), unit: "Lux", status: "normal" },
+      solarWatt: { value: 0, unit: "W", status: "normal" },
+      solarVoltage: { value: 0, unit: "V", status: "normal" },
     },
     uptime: "99.2%",
     updateInterval: "30 detik",
@@ -218,13 +210,13 @@ const DEFAULT_STATIONS = [
     lastUpdate: "5 hari yang lalu",
     sensors: {
       temperature: { value: 33.8, unit: "°C", status: "warning" },
-      humidity: { value: 62.3, unit: "RH", status: "normal" },
-      light: { value: 38.5, unit: "Lux", status: "normal" },
-      solarCurrent: { value: -0.18, unit: "mA", status: "normal" },
-      solarVoltage: { value: 0.95, unit: "mV", status: "normal" },
-      solarWatt: { value: 0, unit: "mW", status: "normal" },
-      wind: { value: 2, unit: "Knot", status: "normal" },
-      rain: { value: 0.5, unit: "mm", status: "normal" },
+      airHumidity: { value: 62.3, unit: "%", status: "normal" },
+      soilMoisture: { value: 28.5, unit: "%", status: "normal" },
+      windSpeed: { value: 4.2, unit: "km/h", status: "normal" },
+      rainIntensity: { value: 1.5, unit: "mm", status: "normal" },
+      lightIntensity: { value: generateLightIntensity(), unit: "Lux", status: "normal" },
+      solarWatt: { value: 0, unit: "W", status: "normal" },
+      solarVoltage: { value: 0, unit: "V", status: "normal" },
     },
     uptime: "98.7%",
     updateInterval: "30 detik",
@@ -238,13 +230,13 @@ const DEFAULT_STATIONS = [
     lastUpdate: "3 minggu yang lalu",
     sensors: {
       temperature: { value: 0, unit: "°C", status: "error" },
-      humidity: { value: 0, unit: "RH", status: "error" },
-      light: { value: 0, unit: "Lux", status: "error" },
-      solarCurrent: { value: 0, unit: "mA", status: "error" },
-      solarVoltage: { value: 0, unit: "mV", status: "error" },
-      solarWatt: { value: 0, unit: "mW", status: "error" },
-      wind: { value: 0, unit: "Knot", status: "error" },
-      rain: { value: 0, unit: "mm", status: "error" },
+      airHumidity: { value: 0, unit: "%", status: "error" },
+      soilMoisture: { value: 0, unit: "%", status: "error" },
+      windSpeed: { value: 0, unit: "km/h", status: "error" },
+      rainIntensity: { value: 0, unit: "mm", status: "error" },
+      lightIntensity: { value: 0, unit: "Lux", status: "error" },
+      solarWatt: { value: 0, unit: "W", status: "error" },
+      solarVoltage: { value: 0, unit: "V", status: "error" },
     },
     uptime: "0%",
     updateInterval: "Tidak Tersedia",
@@ -258,9 +250,13 @@ export default function Dashboard() {
   const [now, setNow] = useState(Date.now())
   const [activeView, setActiveView] = useState("dashboard")
   const [showPassword, setShowPassword] = useState(false)
+  const [lightIntensity, setLightIntensity] = useState(generateLightIntensity())
   const [calibrationData, setCalibrationData] = useState({
     temperature: { multiplier: 1.0, offset: 0.0 },
     humidity: { multiplier: 1.0, offset: 0.0 },
+    soil: { multiplier: 1.0, offset: 0.0 },
+    wind: { multiplier: 1.0, offset: 0.0 },
+    rain: { multiplier: 1.0, offset: 0.0 },
     light: { multiplier: 1.0, offset: 0.0 },
   })
   const [dateRange, setDateRange] = useState("last7days")
@@ -269,6 +265,14 @@ export default function Dashboard() {
   const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
   const { history: firebaseHistory } = useFirebaseHistory('wisnu', 20);
 
+  // ===== LIGHT INTENSITY GENERATOR INTERVAL =====
+  useEffect(() => {
+    const lightInterval = setInterval(() => {
+      setLightIntensity(generateLightIntensity());
+    }, 5000); // Update every 5 seconds
+    return () => clearInterval(lightInterval);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(Date.now());
@@ -276,9 +280,9 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
   
+  // ===== FIREBASE DATA INTEGRATION =====
   useEffect(() => {
     if (firebaseData && !firebaseLoading) {
-      // Update station wisnu dengan real-time data dari Firebase
       setUserStations(prevStations => {
         const updatedStations = [...prevStations];
         const stationIndex = updatedStations.findIndex(s => s.id === 'wisnu');
@@ -287,14 +291,46 @@ export default function Dashboard() {
           updatedStations[stationIndex] = {
             ...updatedStations[stationIndex],
             sensors: {
-              temperature: { value: firebaseData.temperature, unit: "°C", status: "normal" },
-              humidity: { value: firebaseData.humidity, unit: "RH", status: "normal" },
-              light: { value: 44.17, unit: "Lux", status: "normal" }, // Keep mock for now
-              solarCurrent: { value: -0.2, unit: "mA", status: "normal" }, // Keep mock
-              solarVoltage: { value: 1.09, unit: "mV", status: "normal" }, // Keep mock
-              solarWatt: { value: 0, unit: "mW", status: "normal" }, // Keep mock
-              wind: { value: 0, unit: "Knot", status: "normal" }, // Keep mock
-              rain: { value: firebaseData.rainIntensity, unit: "mm", status: firebaseData.isRaining ? "warning" : "normal" },
+              temperature: { 
+                value: firebaseData.temperature, 
+                unit: "°C", 
+                status: firebaseData.temperature > 40 ? "warning" : "normal" 
+              },
+              airHumidity: { 
+                value: firebaseData.humidity, 
+                unit: "%", 
+                status: firebaseData.humidity < 30 || firebaseData.humidity > 80 ? "warning" : "normal" 
+              },
+              soilMoisture: { 
+                value: firebaseData.soilMoisture, 
+                unit: "%", 
+                status: firebaseData.soilMoisture < 20 ? "warning" : "normal" 
+              },
+              windSpeed: { 
+                value: firebaseData.windSpeed_kmh, 
+                unit: "km/h", 
+                status: firebaseData.windSpeed_kmh > 25 ? "warning" : "normal" 
+              },
+              rainIntensity: { 
+                value: firebaseData.rainIntensity, 
+                unit: "mm", 
+                status: firebaseData.isRaining ? "warning" : "normal" 
+              },
+              lightIntensity: { 
+                value: lightIntensity, 
+                unit: "Lux", 
+                status: "normal" 
+              },
+              solarWatt: { 
+                value: 0, 
+                unit: "W", 
+                status: "normal" 
+              },
+              solarVoltage: { 
+                value: 0, 
+                unit: "V", 
+                status: "normal" 
+              },
             },
             status: firebaseError ? "inactive" : "active",
             lastUpdate: firebaseData.timestamp 
@@ -306,8 +342,9 @@ export default function Dashboard() {
         return updatedStations;
       });
     }
-  }, [firebaseData, firebaseLoading, firebaseError]);
+  }, [firebaseData, firebaseLoading, firebaseError, lightIntensity]);
 
+  // ===== CHART DATA UPDATES =====
   useEffect(() => {
     if (firebaseHistory && firebaseHistory.length > 0) {
       // Update temperature data
@@ -328,29 +365,56 @@ export default function Dashboard() {
         });
       });
 
-      // Update rain data
-      rainData.splice(0, rainData.length);
+      // Update soil moisture data
+      soilMoistureData.splice(0, soilMoistureData.length);
       firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
-        rainData.push({
+        soilMoistureData.push({
+          time: `${index * 4}:00`,
+          value: item.soilMoisture
+        });
+      });
+
+      // Update wind speed data
+      windSpeedData.splice(0, windSpeedData.length);
+      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+        windSpeedData.push({
+          time: `${index * 4}:00`,
+          value: item.windSpeed_kmh
+        });
+      });
+
+      // Update rain data
+      rainIntensityData.splice(0, rainIntensityData.length);
+      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+        rainIntensityData.push({
           time: `${index * 4}:00`,
           value: item.rainIntensity
         });
       });
+
+      // Update light intensity with generated data
+      lightIntensityData.splice(0, lightIntensityData.length);
+      for (let i = 0; i < 6; i++) {
+        lightIntensityData.push({
+          time: `${i * 4}:00`,
+          value: generateLightIntensity()
+        });
+      }
     }
   }, [firebaseHistory]);  
   
-  // Calculate summary data
+  // ===== CALCULATIONS =====
   const activeStationsCount = userStations.filter((station) => station.status === "active").length
   const avgTemperature =
     userStations
       .filter((station) => station.status === "active")
-      .reduce((sum, station) => sum + station.sensors.temperature.value, 0) / activeStationsCount
+      .reduce((sum, station) => sum + station.sensors.temperature.value, 0) / activeStationsCount || 0
   const avgHumidity =
     userStations
       .filter((station) => station.status === "active")
-      .reduce((sum, station) => sum + station.sensors.humidity.value, 0) / activeStationsCount
+      .reduce((sum, station) => sum + station.sensors.airHumidity.value, 0) / activeStationsCount || 0
 
-  // 6. Firebase refresh handler
+  // ===== HANDLERS =====
   const handleFirebaseRefresh = async () => {
     try {
       await sendDummyData('wisnu');
@@ -373,6 +437,7 @@ export default function Dashboard() {
     alert(`Mengekspor data ${dateRange} dalam format ${exportFormat.toUpperCase()}`)
   }
 
+  // ===== UTILITY FUNCTIONS =====
   const getStatusColor = (status: string) => {
     switch (status) {
       case "normal":
@@ -412,6 +477,7 @@ export default function Dashboard() {
     }
   }
 
+  // ===== SENSOR CARD COMPONENT =====
   const SensorCard = ({
     title,
     value,
@@ -462,6 +528,7 @@ export default function Dashboard() {
     </Card>
   )
 
+  // ===== STATION CARD COMPONENT =====
   const StationCard = ({ station }: { station: any }) => (
     <Card
       className={`hover:shadow-md transition-shadow cursor-pointer ${
@@ -496,7 +563,7 @@ export default function Dashboard() {
             <p className="text-xs text-gray-500">Kelembaban</p>
             <p className="font-semibold text-gray-900">
               {station.status === "active"
-                ? `${Number(station.sensors.humidity.value).toFixed(1)}%`
+                ? `${Number(station.sensors.airHumidity.value).toFixed(1)}%`
                 : "T/A"}
             </p>
           </div>          
@@ -768,7 +835,7 @@ export default function Dashboard() {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Rata-rata Kelembaban</p>
                           <p className="text-2xl font-bold text-green-600">
-                            {avgHumidity.toFixed(1)} <span className="text-sm font-normal">RH</span>
+                            {avgHumidity.toFixed(1)} <span className="text-sm font-normal">%</span>
                           </p>
                         </div>
                         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -897,10 +964,10 @@ export default function Dashboard() {
                     <TabsTrigger value="articles">Artikel</TabsTrigger>
                   </TabsList>
                   <TabsContent value="sensors" className="space-y-6">
-                    {/* Sensor Data Cards */}
+                    {/* ===== 8 SENSOR CARDS WITH CORRECT DATA ===== */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <SensorCard
-                        title="Suhu"
+                        title="Temperatur"
                         value={Number(currentStation.sensors.temperature.value).toFixed(1)}
                         unit="°C"
                         icon={Thermometer}
@@ -910,74 +977,74 @@ export default function Dashboard() {
                         data={temperatureData}
                       />
                       <SensorCard
-                        title="Kelembapan"
-                        value={Number(currentStation.sensors.humidity.value).toFixed(1)}
-                        unit="RH"
+                        title="Kelembaban Udara"
+                        value={Number(currentStation.sensors.airHumidity.value).toFixed(1)}
+                        unit="%"
                         icon={Droplets}
                         color="text-green-600"
                         bgColor="bg-green-50"
-                        status={currentStation.sensors.humidity.status}
+                        status={currentStation.sensors.airHumidity.status}
                         data={humidityData}
                       />
                       <SensorCard
+                        title="Kelembaban Tanah"
+                        value={Number(currentStation.sensors.soilMoisture.value).toFixed(1)}
+                        unit="%"
+                        icon={TreePine}
+                        color="text-amber-600"
+                        bgColor="bg-amber-50"
+                        status={currentStation.sensors.soilMoisture.status}
+                        data={soilMoistureData}
+                      />
+                      <SensorCard
+                        title="Kecepatan Angin"
+                        value={Number(currentStation.sensors.windSpeed.value).toFixed(1)}
+                        unit="km/h"
+                        icon={Wind}
+                        color="text-cyan-600"
+                        bgColor="bg-cyan-50"
+                        status={currentStation.sensors.windSpeed.status}
+                        data={windSpeedData}
+                      />
+                      <SensorCard
+                        title="Curah Hujan"
+                        value={Number(currentStation.sensors.rainIntensity.value).toFixed(1)}
+                        unit="mm"
+                        icon={CloudRain}
+                        color="text-indigo-600"
+                        bgColor="bg-indigo-50"
+                        status={currentStation.sensors.rainIntensity.status}
+                        data={rainIntensityData}
+                      />
+                      <SensorCard
                         title="Intensitas Cahaya"
-                        value={Number(currentStation.sensors.light.value).toFixed(1)}
+                        value={Number(currentStation.sensors.lightIntensity.value).toFixed(1)}
                         unit="Lux"
                         icon={Sun}
                         color="text-orange-600"
                         bgColor="bg-orange-50"
-                        status={currentStation.sensors.light.status}
-                        data={lightData}
+                        status={currentStation.sensors.lightIntensity.status}
+                        data={lightIntensityData}
                       />
                       <SensorCard
-                        title="Arus Solar Cell"
-                        value={Number(currentStation.sensors.solarCurrent.value).toFixed(1)}
-                        unit="mA"
-                        icon={Zap}
-                        color="text-green-600"
-                        bgColor="bg-green-50"
-                        status={currentStation.sensors.solarCurrent.status}
-                        data={solarCurrentData}
-                      />
-                      <SensorCard
-                        title="Tegangan Solar"
-                        value={Number(currentStation.sensors.solarVoltage.value).toFixed(1)}
-                        unit="mV"
-                        icon={Gauge}
-                        color="text-orange-600"
-                        bgColor="bg-orange-50"
-                        status={currentStation.sensors.solarVoltage.status}
-                        data={solarVoltageData}
-                      />
-                      <SensorCard
-                        title="Watt Solar Cell"
+                        title="Watt Panel Surya"
                         value={Number(currentStation.sensors.solarWatt.value).toFixed(1)}
-                        unit="mW"
+                        unit="W"
                         icon={Zap}
-                        color="text-orange-600"
-                        bgColor="bg-orange-50"
+                        color="text-yellow-600"
+                        bgColor="bg-yellow-50"
                         status={currentStation.sensors.solarWatt.status}
-                        data={solarWattData}
+                        data={[]}
                       />
                       <SensorCard
-                        title="Angin"
-                        value={Number(currentStation.sensors.wind.value).toFixed(1)}
-                        unit="Knot"
-                        icon={Wind}
-                        color="text-green-600"
-                        bgColor="bg-green-50"
-                        status={currentStation.sensors.wind.status}
-                        data={windData}
-                      />
-                      <SensorCard
-                        title="Pengukur Hujan"
-                        value={Number(currentStation.sensors.rain.value).toFixed(1)}
-                        unit="mm"
-                        icon={CloudRain}
-                        color="text-blue-600"
-                        bgColor="bg-blue-50"
-                        status={currentStation.sensors.rain.status}
-                        data={rainData}
+                        title="Tegangan Panel Surya"
+                        value={Number(currentStation.sensors.solarVoltage.value).toFixed(1)}
+                        unit="V"
+                        icon={Gauge}
+                        color="text-purple-600"
+                        bgColor="bg-purple-50"
+                        status={currentStation.sensors.solarVoltage.status}
+                        data={[]}
                       />
                     </div>
 
@@ -987,7 +1054,7 @@ export default function Dashboard() {
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
                             <Thermometer className="w-5 h-5 text-blue-600" />
-                            <span>Tren Suhu</span>
+                            <span>Tren Temperatur</span>
                             <Badge variant="secondary" className="ml-auto">
                               Real-time
                             </Badge>
@@ -1010,7 +1077,7 @@ export default function Dashboard() {
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
                             <Droplets className="w-5 h-5 text-green-600" />
-                            <span>Tren Kelembaban</span>
+                            <span>Tren Kelembaban Udara</span>
                             <Badge variant="secondary" className="ml-auto">
                               Real-time
                             </Badge>
@@ -1024,6 +1091,52 @@ export default function Dashboard() {
                               <YAxis />
                               <Tooltip />
                               <Line type="monotone" dataKey="value" stroke="#16a34a" strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <TreePine className="w-5 h-5 text-amber-600" />
+                            <span>Tren Kelembaban Tanah</span>
+                            <Badge variant="secondary" className="ml-auto">
+                              Real-time
+                            </Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={soilMoistureData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="time" />
+                              <YAxis />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="value" stroke="#d97706" strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <Sun className="w-5 h-5 text-orange-600" />
+                            <span>Tren Intensitas Cahaya</span>
+                            <Badge variant="outline" className="ml-auto">
+                              Generated
+                            </Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={lightIntensityData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="time" />
+                              <YAxis />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="value" stroke="#ea580c" strokeWidth={2} />
                             </LineChart>
                           </ResponsiveContainer>
                         </CardContent>
@@ -1145,12 +1258,12 @@ export default function Dashboard() {
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Thermometer className="w-4 h-4 mr-2 text-blue-600" />
-                        Sensor Suhu
+                        Sensor Temperatur
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                           <Label className="text-sm">Nilai Mentah</Label>
-                          <Input value="34.8" disabled />
+                          <Input value={currentStation?.sensors.temperature.value || "0"} disabled />
                         </div>
                         <div>
                           <Label className="text-sm">Pengali</Label>
@@ -1176,7 +1289,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <Label className="text-sm">Nilai Terkalibrasi</Label>
-                          <Input value="35.1 °C" disabled />
+                          <Input value={`${((currentStation?.sensors.temperature.value || 0) * calibrationData.temperature.multiplier + calibrationData.temperature.offset).toFixed(1)} °C`} disabled />
                           <Button size="sm" className="mt-2 w-full bg-blue-600 hover:bg-blue-700">
                             Perbarui
                           </Button>
@@ -1184,16 +1297,16 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Humidity Calibration */}
+                    {/* Air Humidity Calibration */}
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Droplets className="w-4 h-4 mr-2 text-green-600" />
-                        Sensor Kelembaban
+                        Sensor Kelembaban Udara
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                           <Label className="text-sm">Nilai Mentah</Label>
-                          <Input value="57.2" disabled />
+                          <Input value={currentStation?.sensors.airHumidity.value || "0"} disabled />
                         </div>
                         <div>
                           <Label className="text-sm">Pengali</Label>
@@ -1219,7 +1332,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <Label className="text-sm">Nilai Terkalibrasi</Label>
-                          <Input value="57.7 RH" disabled />
+                          <Input value={`${((currentStation?.sensors.airHumidity.value || 0) * calibrationData.humidity.multiplier + calibrationData.humidity.offset).toFixed(1)} %`} disabled />
                           <Button size="sm" className="mt-2 w-full bg-green-600 hover:bg-green-700">
                             Perbarui
                           </Button>
@@ -1227,7 +1340,49 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Light Sensor Calibration */}
+                    {/* Additional calibration sections for other sensors */}
+                    <div className="p-4 border rounded-lg">
+                      <h4 className="font-medium mb-3 flex items-center">
+                        <TreePine className="w-4 h-4 mr-2 text-amber-600" />
+                        Sensor Kelembaban Tanah
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <Label className="text-sm">Nilai Mentah</Label>
+                          <Input value={currentStation?.sensors.soilMoisture.value || "0"} disabled />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Pengali</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            value={calibrationData.soil.multiplier}
+                            onChange={(e) =>
+                              handleCalibrationUpdate("soil", "multiplier", Number.parseFloat(e.target.value))
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Offset</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            value={calibrationData.soil.offset}
+                            onChange={(e) =>
+                              handleCalibrationUpdate("soil", "offset", Number.parseFloat(e.target.value))
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm">Nilai Terkalibrasi</Label>
+                          <Input value={`${((currentStation?.sensors.soilMoisture.value || 0) * calibrationData.soil.multiplier + calibrationData.soil.offset).toFixed(1)} %`} disabled />
+                          <Button size="sm" className="mt-2 w-full bg-amber-600 hover:bg-amber-700">
+                            Perbarui
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Sun className="w-4 h-4 mr-2 text-orange-600" />
@@ -1235,8 +1390,8 @@ export default function Dashboard() {
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <Label className="text-sm">Nilai Mentah</Label>
-                          <Input value="43.9" disabled />
+                          <Label className="text-sm">Nilai Generated</Label>
+                          <Input value={lightIntensity.toFixed(1)} disabled />
                         </div>
                         <div>
                           <Label className="text-sm">Pengali</Label>
@@ -1262,7 +1417,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <Label className="text-sm">Nilai Terkalibrasi</Label>
-                          <Input value="44.17 Lux" disabled />
+                          <Input value={`${(lightIntensity * calibrationData.light.multiplier + calibrationData.light.offset).toFixed(1)} Lux`} disabled />
                           <Button size="sm" className="mt-2 w-full bg-orange-600 hover:bg-orange-700">
                             Perbarui
                           </Button>
