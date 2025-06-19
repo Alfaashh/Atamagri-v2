@@ -1,6 +1,7 @@
 """FastAPI backend exposing plant disease detection from webcam or Tello drone.
 
 Start the server with:
+
     uvicorn backend.drone_api:app --host 0.0.0.0 --port 8000
 
 The server creates a single global `detector` object that runs inference in the
@@ -18,11 +19,6 @@ import threading
 import time
 from pathlib import Path
 from typing import Optional, Dict, Any
-import base64
-import traceback
-import sys
-import asyncio
-from queue import Queue
 
 import cv2
 import numpy as np
@@ -34,6 +30,11 @@ from fastapi import FastAPI, Query, HTTPException, Request, WebSocket, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from PIL import Image
+import sys
+import asyncio
+from queue import Queue
+import base64
+import traceback
 
 try:
     from djitellopy import Tello  # Optional – only required for drone mode
@@ -217,61 +218,6 @@ def preprocess_image(frame, device):
 
 
 # ---------------------------------------------------------------------------
-# Color Calibration ----------------------------------------------------------
-# ---------------------------------------------------------------------------
-
-class ColorCalibration:
-    """Handle color calibration for consistent imaging across different lighting conditions."""
-    
-    def __init__(self):
-        self.auto_correct = True
-        self.correction_factor = 1.2
-        
-    def process_frame(self, frame):
-        """Apply color correction to frame."""
-        if not self.auto_correct:
-            return frame
-            
-        # Auto white balance
-        frame_corrected = self._auto_white_balance(frame)
-        
-        # Reduce purple tint that's common in some cameras
-        frame_corrected = self._reduce_purple_tint(frame_corrected)
-        
-        return frame_corrected
-    
-    def _auto_white_balance(self, frame):
-        """Simple auto white balance."""
-        # Calculate the average color values
-        avg_b = np.mean(frame[:, :, 0])
-        avg_g = np.mean(frame[:, :, 1])
-        avg_r = np.mean(frame[:, :, 2])
-        
-        # Calculate correction factors
-        gray_avg = (avg_b + avg_g + avg_r) / 3.0
-        
-        if gray_avg > 0:
-            scale_b = gray_avg / avg_b if avg_b > 0 else 1.0
-            scale_g = gray_avg / avg_g if avg_g > 0 else 1.0
-            scale_r = gray_avg / avg_r if avg_r > 0 else 1.0
-            
-            # Apply correction
-            frame[:, :, 0] = np.clip(frame[:, :, 0] * scale_b, 0, 255)
-            frame[:, :, 1] = np.clip(frame[:, :, 1] * scale_g, 0, 255)
-            frame[:, :, 2] = np.clip(frame[:, :, 2] * scale_r, 0, 255)
-        
-        return frame
-    
-    def _reduce_purple_tint(self, frame):
-        """Reduce purple tinting common in webcam feeds."""
-        # Slightly reduce blue channel to counter purple tint
-        frame[:, :, 0] = frame[:, :, 0] * 0.95  # Reduce blue slightly
-        frame[:, :, 2] = frame[:, :, 2] * 1.05  # Boost red slightly
-        
-        return np.clip(frame, 0, 255).astype(np.uint8)
-
-
-# ---------------------------------------------------------------------------
 # Detector class -------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
@@ -283,9 +229,6 @@ class Detector:
         self.source = source  # 'webcam' or 'tello'
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {self.device}")
-
-        # Initialize color calibration
-        self.calibration = ColorCalibration()
 
         # Try to initialize Tello if requested, fall back to webcam if it fails
         if source == "tello":
@@ -386,7 +329,7 @@ class Detector:
         if self.source == "tello" and self.tello is not None:
             self.tello.streamoff()
             self.tello.end()
-        elif self.source == "webcam" and self.cap:
+        elif self.source == "webcam":
             self.cap.release()
 
     def _loop(self) -> None:
@@ -399,9 +342,6 @@ class Detector:
                     # No frame captured, wait briefly
                     time.sleep(0.1)
                     continue
-
-                # Apply color calibration
-                frame = self.calibration.process_frame(frame)
 
                 # Store frame
                 self.last_frame = frame
@@ -435,77 +375,12 @@ class Detector:
             # Cleanup resources
             if self.source == "tello" and self.tello is not None:
                 self.tello.streamoff()
-            elif self.source == "webcam" and self.cap:
+            elif self.source == "webcam":
                 self.cap.release()
-
-    def get_drone_status(self):
-        """Get current drone status (only for Tello)."""
-        if self.source == "tello" and self.tello:
-            try:
-                return {
-                    "battery": self.tello.get_battery(),
-                    "altitude": self.tello.get_height(),
-                    "speed": self.tello.get_speed_x(),
-                    "signal": 100,  # Dummy value - Tello doesn't provide signal strength
-                    "isConnected": True
-                }
-            except Exception as e:
-                print(f"Error getting drone status: {e}")
-                return {
-                    "battery": 0,
-                    "altitude": 0,
-                    "speed": 0,
-                    "signal": 0,
-                    "isConnected": False
-                }
-        return {
-            "battery": 100,  # Dummy values for webcam
-            "altitude": 0,
-            "speed": 0,
-            "signal": 100,
-            "isConnected": True
-        }
-
-    def send_command(self, command: str):
-        """Send command to drone (only for Tello)."""
-        if self.source == "tello" and self.tello:
-            try:
-                if command == "takeoff":
-                    self.tello.takeoff()
-                elif command == "land":
-                    self.tello.land()
-                elif command == "emergency":
-                    self.tello.emergency()
-                elif command == "up":
-                    self.tello.move_up(30)
-                elif command == "down":
-                    self.tello.move_down(30)
-                elif command == "left":
-                    self.tello.move_left(30)
-                elif command == "right":
-                    self.tello.move_right(30)
-                elif command == "forward":
-                    self.tello.move_forward(30)
-                elif command == "backward":
-                    self.tello.move_back(30)
-                elif command == "flip":
-                    self.tello.flip_forward()
-                elif command == "rotate_cw":
-                    self.tello.rotate_clockwise(90)
-                elif command == "rotate_ccw":
-                    self.tello.rotate_counter_clockwise(90)
-                else:
-                    print(f"Unknown command: {command}")
-                    return False
-                return True
-            except Exception as e:
-                print(f"Error sending command {command}: {e}")
-                return False
-        return False
 
 
 # ---------------------------------------------------------------------------
-# FastAPI App ----------------------------------------------------------------
+# FastAPI --------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="Drone Plant Disease Detection API")
@@ -513,7 +388,7 @@ app = FastAPI(title="Drone Plant Disease Detection API")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://10.11.3.229:3000", "https://*.azurestaticapps.net"],  # React frontend URLs
+    allow_origins=["http://localhost:3000", "http://10.11.3.229:3000"],  # React frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -577,32 +452,10 @@ def latest_frame() -> Response:  # noqa: D401 – simple descriptor
     return Response(content=buf.tobytes(), media_type="image/jpeg", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
-@app.get("/drone_status")
-async def get_drone_status():
-    """Get current drone status."""
-    global detector
-    if not detector:
-        return {"isConnected": False, "battery": 0, "altitude": 0, "speed": 0, "signal": 0}
-    
-    return detector.get_drone_status()
-
-
-@app.post("/drone_command")
-async def send_drone_command(request: Request):
-    """Send command to drone."""
-    global detector
-    if not detector:
-        raise HTTPException(status_code=400, detail="Detector not running")
-    
-    body = await request.json()
-    command = body.get("command")
-    
-    if not command:
-        raise HTTPException(status_code=400, detail="Command required")
-    
-    success = detector.send_command(command)
-    return {"success": success, "command": command}
-
+@app.get("/")
+def root() -> JSONResponse:  # noqa: D401 – simple descriptor
+    """Simple health check."""
+    return JSONResponse({"detail": "Drone Detection API is up"})
 
 def generate_frames():
     """Generate video frames for streaming."""
@@ -637,54 +490,6 @@ def generate_frames():
 async def video_feed():
     """Stream video frames."""
     return StreamingResponse(generate_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
-
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time data streaming."""
-    await websocket.accept()
-    try:
-        while True:
-            if detector is not None:
-                # Send prediction data
-                prediction_data = {
-                    "type": "prediction",
-                    "data": detector.last_prediction
-                }
-                await websocket.send_text(json.dumps(prediction_data))
-                
-                # Send drone status if available
-                if detector.source == "tello":
-                    status_data = {
-                        "type": "status", 
-                        "data": detector.get_drone_status()
-                    }
-                    await websocket.send_text(json.dumps(status_data))
-                    
-            await asyncio.sleep(1)  # Send updates every second
-            
-    except WebSocketDisconnect:
-        print("WebSocket client disconnected")
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy", 
-        "detector_running": detector is not None and detector.running,
-        "source": detector.source if detector else None,
-        "device": str(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    }
-
-
-@app.get("/")
-def root() -> JSONResponse:  # noqa: D401 – simple descriptor
-    """Simple health check."""
-    return JSONResponse({"detail": "Drone Detection API is up", "version": "2.0.0"})
-
 
 if __name__ == "__main__":
     import uvicorn
