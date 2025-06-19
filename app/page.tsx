@@ -555,7 +555,7 @@ export default function AtamagriLanding() {
                 <Button
                   size="default"
                   variant="outline"
-                  className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-green-600 px-6 py-3"
+                  className="w-full sm:w-auto bg-white text-green-600 hover:bg-gray-100 px-6 py-3"
                 >
                   Hubungi Tim Penjualan
                 </Button>
