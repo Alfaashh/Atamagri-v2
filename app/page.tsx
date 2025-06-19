@@ -175,7 +175,7 @@ export default function AtamagriLanding() {
             <div className="order-1 lg:order-2 relative">
               <div className="bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xl">
                 <Image
-                  src="/assets/dashboard-preview.jpg"
+                  src="/assets/dashboard.jpg"
                   alt="Pratinjau Dashboard Atamagri"
                   width={500}
                   height={400}
