@@ -156,35 +156,35 @@ const weatherForecast = [
 const newsArticles = [
   {
     id: 1,
-    title: "Optimizing Rice Irrigation in Dry Season",
+    title: "Mengoptimalkan Irigasi Padi di Musim Kemarau",
     category: "Tanaman",
-    excerpt: "Learn effective water management techniques for rice cultivation during drought periods.",
+    excerpt: "Pelajari teknik manajemen air yang efektif untuk budidaya padi selama periode kekeringan.",
     image: "/placeholder.svg?height=100&width=150",
-    readTime: "5 min read",
+    readTime: "5 menit baca",
   },
   {
     id: 2,
-    title: "Weather Patterns and Crop Planning",
+    title: "Pola Cuaca dan Perencanaan Tanaman",
     category: "Cuaca",
-    excerpt: "Understanding seasonal weather changes for better agricultural planning and decision making.",
+    excerpt: "Memahami perubahan cuaca musiman untuk perencanaan pertanian dan pengambilan keputusan yang lebih baik.",
     image: "/placeholder.svg?height=100&width=150",
-    readTime: "7 min read",
+    readTime: "7 menit baca",
   },
   {
     id: 3,
-    title: "Soil Health Management Techniques",
+    title: "Teknik Manajemen Kesehatan Tanah",
     category: "Tanah",
-    excerpt: "Essential practices for maintaining soil fertility and improving crop yields sustainably.",
+    excerpt: "Praktik penting untuk menjaga kesuburan tanah dan meningkatkan hasil panen secara berkelanjutan.",
     image: "/placeholder.svg?height=100&width=150",
-    readTime: "6 min read",
+    readTime: "6 menit baca",
   },
   {
     id: 4,
-    title: "Integrated Pest Management Strategies",
+    title: "Strategi Pengendalian Hama Terpadu",
     category: "Hama",
-    excerpt: "Effective approaches to control pests while minimizing environmental impact on farms.",
+    excerpt: "Pendekatan efektif untuk mengendalikan hama sambil meminimalkan dampak lingkungan di lahan pertanian.",
     image: "/placeholder.svg?height=100&width=150",
-    readTime: "8 min read",
+    readTime: "8 menit baca",
   },
 ]
 
@@ -195,7 +195,7 @@ const DEFAULT_STATIONS = [
     name: "Stasiun Test Wisnu",
     location: "Solo",
     status: "active",
-    lastUpdate: "2 minutes ago",
+    lastUpdate: "2 menit yang lalu",
     sensors: {
       temperature: { value: 0, unit: "°C", status: "normal" },
       humidity: { value: 0, unit: "RH", status: "normal" },
@@ -207,7 +207,7 @@ const DEFAULT_STATIONS = [
       rain: { value: 0, unit: "mm", status: "normal" },
     },
     uptime: "99.2%",
-    updateInterval: "30 seconds",
+    updateInterval: "30 detik",
     sensorsNormal: "8/8",
   },
   {
@@ -215,7 +215,7 @@ const DEFAULT_STATIONS = [
     name: "Stasiun Test 2",
     location: "Jakarta",
     status: "active",
-    lastUpdate: "5 days ago",
+    lastUpdate: "5 hari yang lalu",
     sensors: {
       temperature: { value: 33.8, unit: "°C", status: "warning" },
       humidity: { value: 62.3, unit: "RH", status: "normal" },
@@ -227,7 +227,7 @@ const DEFAULT_STATIONS = [
       rain: { value: 0.5, unit: "mm", status: "normal" },
     },
     uptime: "98.7%",
-    updateInterval: "30 seconds",
+    updateInterval: "30 detik",
     sensorsNormal: "7/8",
   },
   {
@@ -235,7 +235,7 @@ const DEFAULT_STATIONS = [
     name: "Stasiun 1 - Jakarta",
     location: "Jakarta",
     status: "inactive",
-    lastUpdate: "3 weeks ago",
+    lastUpdate: "3 minggu yang lalu",
     sensors: {
       temperature: { value: 0, unit: "°C", status: "error" },
       humidity: { value: 0, unit: "RH", status: "error" },
@@ -247,7 +247,7 @@ const DEFAULT_STATIONS = [
       rain: { value: 0, unit: "mm", status: "error" },
     },
     uptime: "0%",
-    updateInterval: "N/A",
+    updateInterval: "Tidak Tersedia",
     sensorsNormal: "0/8",
   },
 ]
@@ -299,7 +299,7 @@ export default function Dashboard() {
             status: firebaseError ? "inactive" : "active",
             lastUpdate: firebaseData.timestamp 
               ? timeAgo(firebaseData.timestamp)
-              : "Unknown"
+              : "Tidak Diketahui"
           };
         }
         
@@ -370,7 +370,7 @@ export default function Dashboard() {
   }
 
   const handleExportData = () => {
-    alert(`Exporting ${dateRange} data in ${exportFormat.toUpperCase()} format`)
+    alert(`Mengekspor data ${dateRange} dalam format ${exportFormat.toUpperCase()}`)
   }
 
   const getStatusColor = (status: string) => {
@@ -480,24 +480,24 @@ export default function Dashboard() {
             <h3 className="font-medium text-gray-900">{station.name}</h3>
           </div>
           <Badge variant={station.status === "active" ? "default" : "secondary"}>
-            {station.status === "active" ? "Active" : "Inactive"}
+            {station.status === "active" ? "Aktif" : "Tidak Aktif"}
           </Badge>
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="text-center p-2 bg-gray-50 rounded">
-            <p className="text-xs text-gray-500">Temperature</p>
+            <p className="text-xs text-gray-500">Suhu</p>
             <p className="font-semibold text-gray-900">
               {station.status === "active"
                 ? `${Number(station.sensors.temperature.value).toFixed(1)}°C`
-                : "N/A"}
+                : "T/A"}
             </p>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded">
-            <p className="text-xs text-gray-500">Humidity</p>
+            <p className="text-xs text-gray-500">Kelembaban</p>
             <p className="font-semibold text-gray-900">
               {station.status === "active"
                 ? `${Number(station.sensors.humidity.value).toFixed(1)}%`
-                : "N/A"}
+                : "T/A"}
             </p>
           </div>          
         </div>
@@ -529,15 +529,15 @@ export default function Dashboard() {
                 <Leaf className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-gray-900">Atamagri App</h2>
-                <p className="text-xs text-gray-500">Code: 12345</p>
+                <h2 className="font-bold text-gray-900">Aplikasi Atamagri</h2>
+                <p className="text-xs text-gray-500">Kode: 12345</p>
               </div>
             </div>
           </SidebarHeader>
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupLabel>Navigasi</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
@@ -596,25 +596,25 @@ export default function Dashboard() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start">
                   <User className="w-4 h-4 mr-2" />
-                  User Settings
+                  Pengaturan Pengguna
                   <ChevronDown className="w-4 h-4 ml-auto" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setActiveView("settings")}>
                   <Settings className="w-4 h-4 mr-2" />
-                  Account Settings
+                  Pengaturan Akun
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveView("calibration")}>
                   <Settings className="w-4 h-4 mr-2" />
-                  Sensor Calibration
+                  Kalibrasi Sensor
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link href="/" className="flex items-center w-full">
-                    Logout
+                    Keluar
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -631,14 +631,14 @@ export default function Dashboard() {
                 <SidebarTrigger />
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">
-                    {activeView === "dashboard" && !selectedStation && "Dashboard Overview"}
+                    {activeView === "dashboard" && !selectedStation && "Ikhtisar Dashboard"}
                     {activeView === "dashboard" && selectedStation && currentStation?.name}
-                    {activeView === "settings" && "Account Settings"}
-                    {activeView === "calibration" && "Sensor Calibration"}
+                    {activeView === "settings" && "Pengaturan Akun"}
+                    {activeView === "calibration" && "Kalibrasi Sensor"}
                   </h1>
                   {selectedStation && currentStation && (
                     <p className="text-sm text-gray-500">
-                      Location: {currentStation.location} • Last updated: {currentStation.lastUpdate}
+                      Lokasi: {currentStation.location} • Terakhir diperbarui: {currentStation.lastUpdate}
                     </p>
                   )}
                 </div>
@@ -650,25 +650,25 @@ export default function Dashboard() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
                           <Download className="w-4 h-4 mr-2" />
-                          Download Data
+                          Unduh Data
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>Opsi Ekspor</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <div className="p-2">
                           <Label htmlFor="date-range" className="text-xs mb-1 block">
-                            Date Range
+                            Rentang Tanggal
                           </Label>
                           <Select value={dateRange} onValueChange={setDateRange}>
                             <SelectTrigger id="date-range" className="w-full">
-                              <SelectValue placeholder="Select date range" />
+                              <SelectValue placeholder="Pilih rentang tanggal" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="today">Today</SelectItem>
-                              <SelectItem value="last7days">Last 7 days</SelectItem>
-                              <SelectItem value="last30days">Last 30 days</SelectItem>
-                              <SelectItem value="custom">Custom range</SelectItem>
+                              <SelectItem value="today">Hari ini</SelectItem>
+                              <SelectItem value="last7days">7 hari terakhir</SelectItem>
+                              <SelectItem value="last30days">30 hari terakhir</SelectItem>
+                              <SelectItem value="custom">Rentang khusus</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -678,7 +678,7 @@ export default function Dashboard() {
                           </Label>
                           <Select value={exportFormat} onValueChange={setExportFormat}>
                             <SelectTrigger id="format" className="w-full">
-                              <SelectValue placeholder="Select format" />
+                              <SelectValue placeholder="Pilih format" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="csv">CSV</SelectItem>
@@ -690,7 +690,7 @@ export default function Dashboard() {
                         <DropdownMenuSeparator />
                         <div className="p-2">
                           <Button className="w-full" onClick={handleExportData}>
-                            Export
+                            Ekspor
                           </Button>
                         </div>
                       </DropdownMenuContent>
@@ -701,7 +701,7 @@ export default function Dashboard() {
                       onClick={selectedStation === 'wisnu' ? handleFirebaseRefresh : undefined}
                       >
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Refresh
+                      Segarkan
                     </Button>
                   </>
                 )}
@@ -722,7 +722,7 @@ export default function Dashboard() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Total Stations</p>
+                          <p className="text-sm font-medium text-gray-600">Total Stasiun</p>
                           <p className="text-2xl font-bold text-gray-900">{userStations.length}</p>
                         </div>
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -736,7 +736,7 @@ export default function Dashboard() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Active Stations</p>
+                          <p className="text-sm font-medium text-gray-600">Stasiun Aktif</p>
                           <p className="text-2xl font-bold text-green-600">{activeStationsCount}</p>
                         </div>
                         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -750,7 +750,7 @@ export default function Dashboard() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Avg. Temperature</p>
+                          <p className="text-sm font-medium text-gray-600">Rata-rata Suhu</p>
                           <p className="text-2xl font-bold text-blue-600">
                             {avgTemperature.toFixed(1)} <span className="text-sm font-normal">°C</span>
                           </p>
@@ -766,7 +766,7 @@ export default function Dashboard() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Avg. Humidity</p>
+                          <p className="text-sm font-medium text-gray-600">Rata-rata Kelembaban</p>
                           <p className="text-2xl font-bold text-green-600">
                             {avgHumidity.toFixed(1)} <span className="text-sm font-normal">RH</span>
                           </p>
@@ -783,17 +783,17 @@ export default function Dashboard() {
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" className="bg-green-600 hover:bg-green-700">
                     <PlusCircle className="w-4 h-4 mr-2" />
-                    Add New Station
+                    Tambah Stasiun Baru
                   </Button>
                   <Button size="sm" variant="outline">
                     <Filter className="w-4 h-4 mr-2" />
-                    Filter Stations
+                    Filter Stasiun
                   </Button>
                 </div>
 
                 {/* Stations List */}
                 <div>
-                  <h2 className="text-lg font-semibold mb-4">Your Stations</h2>
+                  <h2 className="text-lg font-semibold mb-4">Stasiun Anda</h2>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {userStations.map((station) => (
                       <StationCard key={station.id} station={station} />
@@ -806,14 +806,14 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <MapPin className="w-5 h-5 mr-2" />
-                      Stations Map
+                      Peta Stasiun
                     </CardTitle>
-                    <CardDescription>Geographical distribution of your weather stations</CardDescription>
+                    <CardDescription>Distribusi geografis stasiun cuaca Anda</CardDescription>
                   </CardHeader>
                   <CardContent className="h-[300px] bg-gray-100 flex items-center justify-center">
                     <div className="text-center">
                       <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500">Map view of your stations would appear here</p>
+                      <p className="text-gray-500">Tampilan peta stasiun Anda akan muncul di sini</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -829,9 +829,9 @@ export default function Dashboard() {
                       <div className="flex items-center">
                         <Activity className="w-5 h-5 text-green-600 mr-3" />
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Sensors Status</p>
+                          <p className="text-sm font-medium text-gray-600">Status Sensor</p>
                           <p className="text-lg font-bold text-gray-900">
-                            {currentStation.sensorsNormal} Sensors Normal
+                            {currentStation.sensorsNormal} Sensor Normal
                           </p>
                         </div>
                       </div>
@@ -847,7 +847,7 @@ export default function Dashboard() {
                     <CardContent className="p-4 flex items-center">
                       <Wifi className="w-5 h-5 text-blue-600 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Uptime</p>
+                        <p className="text-sm font-medium text-gray-600">Waktu Aktif</p>
                         <p className="text-lg font-bold text-gray-900">{currentStation.uptime}</p>
                       </div>
                     </CardContent>
@@ -857,7 +857,7 @@ export default function Dashboard() {
                     <CardContent className="p-4 flex items-center">
                       <Clock className="w-5 h-5 text-purple-600 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Update Interval</p>
+                        <p className="text-sm font-medium text-gray-600">Interval Pembaruan</p>
                         <p className="text-lg font-bold text-gray-900">{currentStation.updateInterval}</p>
                       </div>
                     </CardContent>
@@ -868,11 +868,11 @@ export default function Dashboard() {
                 <div className="flex flex-wrap gap-2 mb-6">
                   <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                     <Download className="w-4 h-4 mr-2" />
-                    Export Data
+                    Ekspor Data
                   </Button>
                   <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
                     <AlertTriangle className="w-4 h-4 mr-2" />
-                    Configure Alerts
+                    Konfigurasi Peringatan
                   </Button>
                   <Button
                     size="sm"
@@ -880,26 +880,26 @@ export default function Dashboard() {
                     onClick={() => setActiveView("calibration")}
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Calibrate Sensors
+                    Kalibrasi Sensor
                   </Button>
                   <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                     <FileText className="w-4 h-4 mr-2" />
-                    View Reports
+                    Lihat Laporan
                   </Button>
                 </div>
 
                 {/* Tabs for different views */}
                 <Tabs defaultValue="sensors" className="mb-6">
                   <TabsList>
-                    <TabsTrigger value="sensors">Sensors</TabsTrigger>
-                    <TabsTrigger value="forecast">Weather Forecast</TabsTrigger>
-                    <TabsTrigger value="articles">Articles</TabsTrigger>
+                    <TabsTrigger value="sensors">Sensor</TabsTrigger>
+                    <TabsTrigger value="forecast">Prakiraan Cuaca</TabsTrigger>
+                    <TabsTrigger value="articles">Artikel</TabsTrigger>
                   </TabsList>
                   <TabsContent value="sensors" className="space-y-6">
                     {/* Sensor Data Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <SensorCard
-                        title="Temperature"
+                        title="Suhu"
                         value={Number(currentStation.sensors.temperature.value).toFixed(1)}
                         unit="°C"
                         icon={Thermometer}
@@ -959,7 +959,7 @@ export default function Dashboard() {
                         data={solarWattData}
                       />
                       <SensorCard
-                        title="Wind"
+                        title="Angin"
                         value={Number(currentStation.sensors.wind.value).toFixed(1)}
                         unit="Knot"
                         icon={Wind}
@@ -969,7 +969,7 @@ export default function Dashboard() {
                         data={windData}
                       />
                       <SensorCard
-                        title="Rain Gauge"
+                        title="Pengukur Hujan"
                         value={Number(currentStation.sensors.rain.value).toFixed(1)}
                         unit="mm"
                         icon={CloudRain}
@@ -986,9 +986,9 @@ export default function Dashboard() {
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
                             <Thermometer className="w-5 h-5 text-blue-600" />
-                            <span>Temperature Trend</span>
+                            <span>Tren Suhu</span>
                             <Badge variant="secondary" className="ml-auto">
-                              Realtime
+                              Real-time
                             </Badge>
                           </CardTitle>
                         </CardHeader>
@@ -1009,9 +1009,9 @@ export default function Dashboard() {
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
                             <Droplets className="w-5 h-5 text-green-600" />
-                            <span>Humidity Trend</span>
+                            <span>Tren Kelembaban</span>
                             <Badge variant="secondary" className="ml-auto">
-                              Realtime
+                              Real-time
                             </Badge>
                           </CardTitle>
                         </CardHeader>
@@ -1038,7 +1038,7 @@ export default function Dashboard() {
                           <Sun className="w-5 h-5 text-orange-600" />
                           <span>Prakiraan Cuaca</span>
                         </CardTitle>
-                        <CardDescription>24-hour weather forecast for {currentStation.location}</CardDescription>
+                        <CardDescription>Prakiraan cuaca 24 jam untuk {currentStation.location}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
@@ -1076,7 +1076,7 @@ export default function Dashboard() {
                           <Newspaper className="w-5 h-5 text-purple-600" />
                           <span>Artikel & Informasi Terkini</span>
                         </CardTitle>
-                        <CardDescription>Latest agricultural news and farming tips</CardDescription>
+                        <CardDescription>Berita pertanian terbaru dan tips bercocok tanam</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="grid md:grid-cols-2 gap-4">
@@ -1116,19 +1116,19 @@ export default function Dashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Kalibrasi Sensor</CardTitle>
-                  <CardDescription>Adjust sensor calibration constants for accurate readings</CardDescription>
+                  <CardDescription>Sesuaikan konstanta kalibrasi sensor untuk pembacaan yang akurat</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">Station ID</Label>
+                        <Label className="text-sm font-medium">ID Stasiun</Label>
                         <Input value={selectedStation || ""} disabled className="mt-1" />
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">Station Name</Label>
+                        <Label className="text-sm font-medium">Nama Stasiun</Label>
                         <div className="flex space-x-2 mt-1">
-                          <Input defaultValue={currentStation?.name || "Weather Station"} />
+                          <Input defaultValue={currentStation?.name || "Stasiun Cuaca"} />
                           <Button size="sm" className="bg-green-600 hover:bg-green-700">
                             Simpan
                           </Button>
@@ -1138,21 +1138,21 @@ export default function Dashboard() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Sensor Calibration</h3>
+                    <h3 className="text-lg font-semibold">Kalibrasi Sensor</h3>
 
                     {/* Temperature Calibration */}
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Thermometer className="w-4 h-4 mr-2 text-blue-600" />
-                        Temperature Sensor
+                        Sensor Suhu
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <Label className="text-sm">Raw Value</Label>
+                          <Label className="text-sm">Nilai Mentah</Label>
                           <Input value="34.8" disabled />
                         </div>
                         <div>
-                          <Label className="text-sm">Multiplier</Label>
+                          <Label className="text-sm">Pengali</Label>
                           <Input
                             type="number"
                             step="0.1"
@@ -1174,10 +1174,10 @@ export default function Dashboard() {
                           />
                         </div>
                         <div>
-                          <Label className="text-sm">Calibrated Value</Label>
+                          <Label className="text-sm">Nilai Terkalibrasi</Label>
                           <Input value="35.1 °C" disabled />
                           <Button size="sm" className="mt-2 w-full bg-blue-600 hover:bg-blue-700">
-                            Update
+                            Perbarui
                           </Button>
                         </div>
                       </div>
@@ -1187,15 +1187,15 @@ export default function Dashboard() {
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Droplets className="w-4 h-4 mr-2 text-green-600" />
-                        Humidity Sensor
+                        Sensor Kelembaban
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <Label className="text-sm">Raw Value</Label>
+                          <Label className="text-sm">Nilai Mentah</Label>
                           <Input value="57.2" disabled />
                         </div>
                         <div>
-                          <Label className="text-sm">Multiplier</Label>
+                          <Label className="text-sm">Pengali</Label>
                           <Input
                             type="number"
                             step="0.1"
@@ -1217,10 +1217,10 @@ export default function Dashboard() {
                           />
                         </div>
                         <div>
-                          <Label className="text-sm">Calibrated Value</Label>
+                          <Label className="text-sm">Nilai Terkalibrasi</Label>
                           <Input value="57.7 RH" disabled />
                           <Button size="sm" className="mt-2 w-full bg-green-600 hover:bg-green-700">
-                            Update
+                            Perbarui
                           </Button>
                         </div>
                       </div>
@@ -1230,15 +1230,15 @@ export default function Dashboard() {
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3 flex items-center">
                         <Sun className="w-4 h-4 mr-2 text-orange-600" />
-                        Light Intensity Sensor
+                        Sensor Intensitas Cahaya
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <Label className="text-sm">Raw Value</Label>
+                          <Label className="text-sm">Nilai Mentah</Label>
                           <Input value="43.9" disabled />
                         </div>
                         <div>
-                          <Label className="text-sm">Multiplier</Label>
+                          <Label className="text-sm">Pengali</Label>
                           <Input
                             type="number"
                             step="0.1"
@@ -1260,10 +1260,10 @@ export default function Dashboard() {
                           />
                         </div>
                         <div>
-                          <Label className="text-sm">Calibrated Value</Label>
+                          <Label className="text-sm">Nilai Terkalibrasi</Label>
                           <Input value="44.17 Lux" disabled />
                           <Button size="sm" className="mt-2 w-full bg-orange-600 hover:bg-orange-700">
-                            Update
+                            Perbarui
                           </Button>
                         </div>
                       </div>
@@ -1278,14 +1278,14 @@ export default function Dashboard() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Pengaturan Akun</CardTitle>
-                    <CardDescription>Manage your account information and preferences</CardDescription>
+                    <CardDescription>Kelola informasi akun dan preferensi Anda</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">User Profile</h3>
+                      <h3 className="text-lg font-semibold">Profil Pengguna</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="name">Name</Label>
+                          <Label htmlFor="name">Nama</Label>
                           <Input id="name" defaultValue="John Doe" />
                         </div>
                         <div>
@@ -1297,15 +1297,15 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-4 pt-6 border-t">
-                      <h3 className="text-lg font-semibold">Password Management</h3>
+                      <h3 className="text-lg font-semibold">Manajemen Kata Sandi</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="oldPassword">Old Password</Label>
+                          <Label htmlFor="oldPassword">Kata Sandi Lama</Label>
                           <div className="relative">
                             <Input
                               id="oldPassword"
                               type={showPassword ? "text" : "password"}
-                              placeholder="Enter old password"
+                              placeholder="Masukkan kata sandi lama"
                             />
                             <button
                               type="button"
@@ -1317,19 +1317,19 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="newPassword">New Password</Label>
-                          <Input id="newPassword" type="password" placeholder="Enter new password" />
+                          <Label htmlFor="newPassword">Kata Sandi Baru</Label>
+                          <Input id="newPassword" type="password" placeholder="Masukkan kata sandi baru" />
                         </div>
                         <div>
-                          <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                          <Input id="confirmPassword" type="password" placeholder="Confirm new password" />
+                          <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi Baru</Label>
+                          <Input id="confirmPassword" type="password" placeholder="Konfirmasi kata sandi baru" />
                         </div>
                       </div>
                       <Button className="bg-blue-600 hover:bg-blue-700">Ganti</Button>
                     </div>
 
                     <div className="space-y-4 pt-6 border-t">
-                      <h3 className="text-lg font-semibold">Device Management</h3>
+                      <h3 className="text-lg font-semibold">Manajemen Perangkat</h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center">
@@ -1338,11 +1338,11 @@ export default function Dashboard() {
                             </div>
                             <div>
                               <h4 className="font-medium">AtamaStation #12345</h4>
-                              <p className="text-sm text-gray-500">Firmware v2.1.0 • Last connected: 2 minutes ago</p>
+                              <p className="text-sm text-gray-500">Firmware v2.1.0 • Terakhir terhubung: 2 menit yang lalu</p>
                             </div>
                           </div>
                           <Button variant="outline" size="sm">
-                            Manage
+                            Kelola
                           </Button>
                         </div>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -1352,17 +1352,17 @@ export default function Dashboard() {
                             </div>
                             <div>
                               <h4 className="font-medium">AtamaStation #67890</h4>
-                              <p className="text-sm text-gray-500">Firmware v2.0.5 • Last connected: 3 days ago</p>
+                              <p className="text-sm text-gray-500">Firmware v2.0.5 • Terakhir terhubung: 3 hari yang lalu</p>
                             </div>
                           </div>
                           <Button variant="outline" size="sm">
-                            Manage
+                            Kelola
                           </Button>
                         </div>
                       </div>
                       <Button className="bg-green-600 hover:bg-green-700">
                         <PlusCircle className="w-4 h-4 mr-2" />
-                        Add New Device
+                        Tambah Perangkat Baru
                       </Button>
                     </div>
                   </CardContent>
@@ -1373,7 +1373,7 @@ export default function Dashboard() {
 
           {/* Footer */}
           <footer className="border-t border-gray-200 px-6 py-4 bg-white">
-            <p className="text-sm text-gray-500 text-center">Copyright © 2025 Atamagri. All rights reserved.</p>
+            <p className="text-sm text-gray-500 text-center">Hak Cipta © 2025 Atamagri. Semua hak dilindungi.</p>
           </footer>
         </SidebarInset>
       </div>
