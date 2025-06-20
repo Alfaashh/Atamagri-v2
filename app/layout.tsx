@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   title: "Atamagri - Kecerdasan Iklim untuk Pertanian Cerdas",
   description:
     "Pemantauan cuaca real-time, analitik data iklim, dan rekomendasi keputusan berbasis AI untuk petani, nelayan, dan peneliti dengan platform IoT AtamaStation.",
-    generator: 'v0.dev'
+    generator: 'v0.dev',
+  icons: {
+    icon: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({
