@@ -225,7 +225,7 @@ const DEFAULT_STATIONS = [
       soilMoisture: { value: 0, unit: "%", status: "normal" },
       windSpeed: { value: 0, unit: "km/h", status: "normal" },
       rainIntensity: { value: 0, unit: "mm", status: "normal" },
-      lightIntensity: { value: generateLightIntensity(), unit: "Lux", status: "normal" },
+      lightIntensity: { value: 0, unit: "Lux", status: "normal" },
       solarWatt: { value: 0, unit: "W", status: "normal" },
       solarVoltage: { value: 0, unit: "V", status: "normal" },
     },
@@ -348,7 +348,7 @@ export default function Dashboard() {
                 status: firebaseData.isRaining ? "warning" : "normal" 
               },
               lightIntensity: { 
-                value: lightIntensity, 
+                value: firebaseData.ldr, 
                 unit: "Lux", 
                 status: "normal" 
               },
