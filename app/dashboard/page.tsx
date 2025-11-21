@@ -292,17 +292,17 @@ export default function Dashboard() {
   })
   const [dateRange, setDateRange] = useState("last7days")
   const [exportFormat, setExportFormat] = useState("csv")
-  const [timeRange, setTimeRange] = useState("30min") // New state for chart time range filter
+  const [timeRange, setTimeRange] = useState("1hour") // New state for chart time range filter
 
   const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
 
-  // Dynamic limit based on time range
+  // Dynamic limit based on time range - get last N entries from Firebase
   const getHistoryLimit = () => {
     switch(timeRange) {
-      case '30min': return 360; // 30 min * 12 data per min (every 5 sec)
-      case '24hours': return 2880; // 24 hours * 120 data per hour
-      case '7days': return 2016; // 7 days * 288 data per day (every 5 min)
-      default: return 360;
+      case '1hour': return 720; // Last 720 data entries (~ 1 hour if data comes every 5 sec)
+      case '24hours': return 2880; // Last 2880 data entries
+      case '7days': return 10080; // Last 10080 data entries
+      default: return 720;
     }
   };
 
@@ -392,8 +392,8 @@ export default function Dashboard() {
     const date = new Date(timestamp);
 
     switch(timeRange) {
-      case '30min':
-        // Show HH:mm:ss for 30 minutes view
+      case '1hour':
+        // Show HH:mm:ss for 1 hour view
         return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       case '24hours':
         // Show HH:mm for 24 hours view
@@ -406,8 +406,8 @@ export default function Dashboard() {
     }
   };
 
-  // Helper function to sample data based on time range
-  const sampleData = (data: any[], maxPoints: number = 20) => {
+  // Helper function to sample data - take last N entries, then sample evenly
+  const sampleData = (data: any[], maxPoints: number = 25) => {
     if (data.length <= maxPoints) return data;
 
     const step = Math.ceil(data.length / maxPoints);
@@ -417,21 +417,12 @@ export default function Dashboard() {
   // ===== CHART DATA UPDATES =====
   useEffect(() => {
     if (firebaseHistory && firebaseHistory.length > 0) {
-      // Filter data based on time range
-      const now = Date.now();
-      const timeRangeMapping: Record<string, number> = {
-        '30min': 30 * 60 * 1000,
-        '24hours': 24 * 60 * 60 * 1000,
-        '7days': 7 * 24 * 60 * 60 * 1000,
-      };
-      const timeRangeMs = timeRangeMapping[timeRange] || 30 * 60 * 1000;
+      // Take last N entries already sorted by timestamp (newest first from hook)
+      // Reverse to show oldest to newest on chart
+      const sortedHistory = [...firebaseHistory].reverse();
 
-      const filteredHistory = firebaseHistory
-        .filter((item: any) => item.timestamp && (now - item.timestamp) <= timeRangeMs)
-        .sort((a: any, b: any) => a.timestamp - b.timestamp);
-
-      // Sample data to keep chart readable (max 20-30 points)
-      const sampledHistory = sampleData(filteredHistory, 25);
+      // Sample data to keep chart readable (max 25 points)
+      const sampledHistory = sampleData(sortedHistory, 25);
 
       // Update temperature data
       temperatureData.splice(0, temperatureData.length);
@@ -1241,7 +1232,7 @@ export default function Dashboard() {
                             <SelectValue placeholder="Pilih rentang waktu" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="30min">30 Menit Terakhir</SelectItem>
+                            <SelectItem value="1hour">1 Jam Terakhir</SelectItem>
                             <SelectItem value="24hours">24 Jam Terakhir</SelectItem>
                             <SelectItem value="7days">7 Hari Terakhir</SelectItem>
                           </SelectContent>
