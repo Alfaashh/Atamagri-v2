@@ -292,9 +292,21 @@ export default function Dashboard() {
   })
   const [dateRange, setDateRange] = useState("last7days")
   const [exportFormat, setExportFormat] = useState("csv")
+  const [timeRange, setTimeRange] = useState("30min") // New state for chart time range filter
 
   const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
-  const { history: firebaseHistory } = useFirebaseHistory('wisnu', 20);
+
+  // Dynamic limit based on time range
+  const getHistoryLimit = () => {
+    switch(timeRange) {
+      case '30min': return 360; // 30 min * 12 data per min (every 5 sec)
+      case '24hours': return 2880; // 24 hours * 120 data per hour
+      case '7days': return 2016; // 7 days * 288 data per day (every 5 min)
+      default: return 360;
+    }
+  };
+
+  const { history: firebaseHistory } = useFirebaseHistory('wisnu', getHistoryLimit());
 
   // ===== LIGHT INTENSITY GENERATOR INTERVAL =====
   useEffect(() => {
@@ -375,64 +387,107 @@ export default function Dashboard() {
     }
   }, [firebaseData, firebaseLoading, firebaseError, lightIntensity]);
 
+  // Helper function to format timestamp based on time range
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+
+    switch(timeRange) {
+      case '30min':
+        // Show HH:mm:ss for 30 minutes view
+        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      case '24hours':
+        // Show HH:mm for 24 hours view
+        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      case '7days':
+        // Show DD/MM HH:mm for 7 days view
+        return `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+      default:
+        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+  };
+
+  // Helper function to sample data based on time range
+  const sampleData = (data: any[], maxPoints: number = 20) => {
+    if (data.length <= maxPoints) return data;
+
+    const step = Math.ceil(data.length / maxPoints);
+    return data.filter((_, index) => index % step === 0);
+  };
+
   // ===== CHART DATA UPDATES =====
   useEffect(() => {
     if (firebaseHistory && firebaseHistory.length > 0) {
+      // Filter data based on time range
+      const now = Date.now();
+      const timeRangeMapping: Record<string, number> = {
+        '30min': 30 * 60 * 1000,
+        '24hours': 24 * 60 * 60 * 1000,
+        '7days': 7 * 24 * 60 * 60 * 1000,
+      };
+      const timeRangeMs = timeRangeMapping[timeRange] || 30 * 60 * 1000;
+
+      const filteredHistory = firebaseHistory
+        .filter((item: any) => item.timestamp && (now - item.timestamp) <= timeRangeMs)
+        .sort((a: any, b: any) => a.timestamp - b.timestamp);
+
+      // Sample data to keep chart readable (max 20-30 points)
+      const sampledHistory = sampleData(filteredHistory, 25);
+
       // Update temperature data
       temperatureData.splice(0, temperatureData.length);
-      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+      sampledHistory.forEach((item) => {
         temperatureData.push({
-          time: `${index * 4}:00`,
+          time: formatTimestamp(item.timestamp),
           value: item.temperature
         });
       });
-  
+
       // Update humidity data
       humidityData.splice(0, humidityData.length);
-      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+      sampledHistory.forEach((item) => {
         humidityData.push({
-          time: `${index * 4}:00`,
+          time: formatTimestamp(item.timestamp),
           value: item.humidity
         });
       });
 
       // Update soil moisture data
       soilMoistureData.splice(0, soilMoistureData.length);
-      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+      sampledHistory.forEach((item) => {
         soilMoistureData.push({
-          time: `${index * 4}:00`,
+          time: formatTimestamp(item.timestamp),
           value: item.soilMoisture
         });
       });
 
       // Update wind speed data
       windSpeedData.splice(0, windSpeedData.length);
-      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+      sampledHistory.forEach((item) => {
         windSpeedData.push({
-          time: `${index * 4}:00`,
-          value: item.windSpeed_kmh
+          time: formatTimestamp(item.timestamp),
+          value: item.windSpeed_kmh || 0
         });
       });
 
       // Update rain data
       rainIntensityData.splice(0, rainIntensityData.length);
-      firebaseHistory.slice(0, 6).reverse().forEach((item, index) => {
+      sampledHistory.forEach((item) => {
         rainIntensityData.push({
-          time: `${index * 4}:00`,
+          time: formatTimestamp(item.timestamp),
           value: item.rainIntensity
         });
       });
 
-      // Update light intensity with generated data
+      // Update light intensity data - using LDR from history if available
       lightIntensityData.splice(0, lightIntensityData.length);
-      for (let i = 0; i < 6; i++) {
+      sampledHistory.forEach((item) => {
         lightIntensityData.push({
-          time: `${i * 4}:00`,
-          value: generateLightIntensity()
+          time: formatTimestamp(item.timestamp),
+          value: (item as any).ldr || generateLightIntensity()
         });
-      }
+      });
     }
-  }, [firebaseHistory]);  
+  }, [firebaseHistory, timeRange]);  
   
   // ===== CALCULATIONS =====
   const activeStationsCount = userStations.filter((station) => station.status === "active").length
@@ -1174,6 +1229,24 @@ export default function Dashboard() {
                         status={currentStation.sensors.solarVoltage.status}
                         data={[]}
                       />
+                    </div>
+
+                    {/* Time Range Filter */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Tren Data Sensor</h3>
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="timeRange" className="text-sm">Rentang Waktu:</Label>
+                        <Select value={timeRange} onValueChange={setTimeRange}>
+                          <SelectTrigger id="timeRange" className="w-[180px]">
+                            <SelectValue placeholder="Pilih rentang waktu" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="30min">30 Menit Terakhir</SelectItem>
+                            <SelectItem value="24hours">24 Jam Terakhir</SelectItem>
+                            <SelectItem value="7days">7 Hari Terakhir</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     {/* Charts */}
