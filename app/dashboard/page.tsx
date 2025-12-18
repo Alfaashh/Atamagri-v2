@@ -607,129 +607,12 @@ export default function Dashboard() {
     return `${normalCount}/${total}`
   }
 
-  type DecisionStatus = "normal" | "warning"
+  const getDecisionLabel = (status: "normal" | "warning") => {
+    return status === "normal" ? "Rekomendasi" : "Perhatian"
+  }
 
-  const getDecisionBadgeVariant = (status: DecisionStatus) => {
+  const getDecisionBadgeVariant = (status: "normal" | "warning") => {
     return status === "normal" ? "secondary" : "destructive"
-  }
-
-  interface SimpleDecision {
-    status: DecisionStatus
-    action: string
-    description: string
-  }
-
-  const getIrrigationDecision = (sensors: any): SimpleDecision => {
-    const soil = Number(sensors.soilMoisture?.value) || 0
-    const air = Number(sensors.airHumidity?.value) || 0
-    const rain = Number(sensors.rainIntensity?.value) || 0
-
-    if (soil < 25 && rain === 0 && air < 60) {
-      return {
-        status: "warning",
-        action: "SIRAM",
-        description:
-          "Kelembaban tanah rendah dan tidak ada hujan, jadwalkan penyiraman dalam 1–2 jam ke depan pada blok lahan prioritas.",
-      }
-    }
-    if (soil > 60 || rain > 0) {
-      return {
-        status: "normal",
-        action: "TUNDA",
-        description:
-          "Tanah masih cukup basah / baru turun hujan, tunda penyiraman untuk menghindari genangan dan pembusukan akar.",
-      }
-    }
-    return {
-      status: "normal",
-      action: "PANTAU",
-      description:
-        "Kondisi kelembaban masih stabil, cukup lakukan pemantauan berkala tanpa penambahan irigasi besar.",
-    }
-  }
-
-  const getPlantingDecision = (sensors: any): SimpleDecision => {
-    const temp = Number(sensors.temperature?.value) || 0
-    const humidity = Number(sensors.airHumidity?.value) || 0
-
-    if (temp >= 24 && temp <= 32 && humidity >= 60 && humidity <= 85) {
-      return {
-        status: "normal",
-        action: "TANAM",
-        description:
-          "Rentang suhu dan kelembaban mendukung penanaman bibit baru hari ini, utamakan blok yang belum diolah.",
-      }
-    }
-    if (temp > 34) {
-      return {
-        status: "warning",
-        action: "TUNDA SIANG",
-        description:
-          "Suhu cukup tinggi, lakukan penanaman hanya pada pagi atau sore hari untuk menurunkan stres pada bibit.",
-      }
-    }
-    return {
-      status: "normal",
-      action: "FLEKSIBEL",
-      description:
-        "Kondisi cuaca cukup fluktuatif, penanaman masih bisa dilakukan dengan penyesuaian naungan dan penyiraman awal.",
-    }
-  }
-
-  const getSprayingDecision = (sensors: any): SimpleDecision => {
-    const rain = Number(sensors.rainIntensity?.value) || 0
-    const humidity = Number(sensors.airHumidity?.value) || 0
-
-    if (rain > 0) {
-      return {
-        status: "warning",
-        action: "TUNDA",
-        description:
-          "Sedang atau baru turun hujan, tunda penyemprotan agar larutan tidak terbuang dan efektivitas tetap maksimal.",
-      }
-    }
-    if (humidity > 85) {
-      return {
-        status: "warning",
-        action: "HATI-HATI",
-        description:
-          "Kelembaban sangat tinggi, gunakan dosis dan formulasi yang aman untuk mengurangi risiko bercak dan jamur sekunder.",
-      }
-    }
-    return {
-      status: "normal",
-      action: "LANJUT",
-      description:
-        "Kondisi cuaca mendukung, penyemprotan dapat dijadwalkan sesuai rencana dengan SOP keselamatan standar.",
-    }
-  }
-
-  const getHeatAndWorkDecision = (sensors: any): SimpleDecision => {
-    const temp = Number(sensors.temperature?.value) || 0
-    const light = Number(sensors.lightIntensity?.value) || 0
-
-    if (temp > 34 && light > 600) {
-      return {
-        status: "warning",
-        action: "WASPADA PANAS",
-        description:
-          "Risiko stres panas tinggi, pindahkan pekerjaan berat ke pagi/sore dan berikan naungan tambahan pada tanaman muda.",
-      }
-    }
-    if (temp < 22) {
-      return {
-        status: "normal",
-        action: "AMAN",
-        description:
-          "Suhu relatif sejuk, kondisi aman untuk pekerjaan lapangan dan pemeliharaan rutin sepanjang hari.",
-      }
-    }
-    return {
-      status: "normal",
-      action: "ATUR JAM",
-      description:
-        "Kondisi cukup aman, namun tetap atur jadwal kerja agar menghindari puncak panas tengah hari dan jaga hidrasi petani.",
-    }
   }
 
   // ===== SENSOR CARD COMPONENT =====
@@ -1385,54 +1268,98 @@ export default function Dashboard() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        {(() => {
-                          const irrigation = getIrrigationDecision(currentStation.sensors)
-                          const planting = getPlantingDecision(currentStation.sensors)
-                          const spraying = getSprayingDecision(currentStation.sensors)
-                          const heatWork = getHeatAndWorkDecision(currentStation.sensors)
-
-                          return (
                         <div className="grid md:grid-cols-2 gap-4 text-sm">
                           {/* Keputusan Penyiraman / Irigasi */}
                           <div className="p-3 rounded-lg bg-green-50">
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-semibold text-gray-900">Keputusan Penyiraman / Irigasi</p>
-                              <Badge variant={getDecisionBadgeVariant(irrigation.status)} className="text-xs">
-                                {irrigation.action}
-                              </Badge>
+                              {(() => {
+                                const soil = Number(currentStation.sensors.soilMoisture.value) || 0
+                                const air = Number(currentStation.sensors.airHumidity.value) || 0
+                                const status: "normal" | "warning" =
+                                  soil < 25 && air < 60 ? "warning" : "normal"
+                                return (
+                                  <Badge variant={getDecisionBadgeVariant(status)} className="text-xs">
+                                    {getDecisionLabel(status)}
+                                  </Badge>
+                                )
+                              })()}
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                              Status: {irrigation.status === "normal" ? "kondisi aman" : "perlu perhatian"}
+                            <p className="text-gray-700">
+                              {(() => {
+                                const soil = Number(currentStation.sensors.soilMoisture.value) || 0
+                                const rain = Number(currentStation.sensors.rainIntensity.value) || 0
+
+                                if (soil < 25 && rain === 0) {
+                                  return "Kelembaban tanah rendah dan tidak ada hujan, pertimbangkan penyiraman dalam 1–2 jam ke depan."
+                                }
+                                if (soil > 60 || rain > 0) {
+                                  return "Kelembaban tanah cukup tinggi / baru turun hujan, tunda penyiraman untuk menghindari genangan."
+                                }
+                                return "Kondisi kelembaban masih stabil, tidak ada kebutuhan penyiraman segera."
+                              })()}
                             </p>
-                            <p className="mt-1 text-gray-700">{irrigation.description}</p>
                           </div>
 
                           {/* Keputusan Waktu Penanaman */}
                           <div className="p-3 rounded-lg bg-blue-50">
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-semibold text-gray-900">Keputusan Waktu Penanaman</p>
-                              <Badge variant={getDecisionBadgeVariant(planting.status)} className="text-xs">
-                                {planting.action}
-                              </Badge>
+                              {(() => {
+                                const temp = Number(currentStation.sensors.temperature.value) || 0
+                                const status: "normal" | "warning" =
+                                  temp >= 24 && temp <= 32 ? "normal" : "warning"
+                                return (
+                                  <Badge variant={getDecisionBadgeVariant(status)} className="text-xs">
+                                    {getDecisionLabel(status)}
+                                  </Badge>
+                                )
+                              })()}
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                              Status: {planting.status === "normal" ? "kondisi aman" : "perlu penyesuaian"}
+                            <p className="text-gray-700">
+                              {(() => {
+                                const temp = Number(currentStation.sensors.temperature.value) || 0
+                                const humidity = Number(currentStation.sensors.airHumidity.value) || 0
+
+                                if (temp >= 24 && temp <= 32 && humidity >= 60 && humidity <= 85) {
+                                  return "Rentang suhu dan kelembaban mendukung penanaman bibit baru hari ini."
+                                }
+                                if (temp > 34) {
+                                  return "Suhu cukup tinggi, disarankan menjadwalkan penanaman pada pagi atau sore hari."
+                                }
+                                return "Kondisi cukup fluktuatif, penanaman masih bisa dilakukan dengan pengelolaan naungan yang baik."
+                              })()}
                             </p>
-                            <p className="mt-1 text-gray-700">{planting.description}</p>
                           </div>
 
                           {/* Keputusan Penyemprotan Pupuk / Pestisida */}
                           <div className="p-3 rounded-lg bg-amber-50">
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-semibold text-gray-900">Keputusan Penyemprotan Pupuk / Pestisida</p>
-                              <Badge variant={getDecisionBadgeVariant(spraying.status)} className="text-xs">
-                                {spraying.action}
-                              </Badge>
+                              {(() => {
+                                const rain = Number(currentStation.sensors.rainIntensity.value) || 0
+                                const status: "normal" | "warning" = rain === 0 ? "normal" : "warning"
+                                return (
+                                  <Badge variant={getDecisionBadgeVariant(status)} className="text-xs">
+                                    {getDecisionLabel(status)}
+                                  </Badge>
+                                )
+                              })()}
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                              Status: {spraying.status === "normal" ? "bisa dilanjutkan" : "sebaiknya ditunda"}
+                            <p className="text-gray-700">
+                              {(() => {
+                                const rain = Number(currentStation.sensors.rainIntensity.value) || 0
+                                const humidity = Number(currentStation.sensors.airHumidity.value) || 0
+
+                                if (rain > 0) {
+                                  return "Sedang/turun hujan, tunda penyemprotan agar tidak terbuang percuma."
+                                }
+                                if (humidity > 85) {
+                                  return "Kelembaban sangat tinggi, pilih dosis dan formulasi yang aman untuk menghindari bercak daun."
+                                }
+                                return "Kondisi cuaca mendukung, penyemprotan dapat dijadwalkan sesuai rencana."
+                              })()}
                             </p>
-                            <p className="mt-1 text-gray-700">{spraying.description}</p>
                           </div>
 
                           {/* Keputusan Perlindungan Tanaman (Stres Panas) & Manajemen Waktu Kerja */}
@@ -1441,18 +1368,34 @@ export default function Dashboard() {
                               <p className="font-semibold text-gray-900">
                                 Perlindungan Tanaman (Stres Panas) & Waktu Kerja Petani
                               </p>
-                              <Badge variant={getDecisionBadgeVariant(heatWork.status)} className="text-xs">
-                                {heatWork.action}
-                              </Badge>
+                              {(() => {
+                                const temp = Number(currentStation.sensors.temperature.value) || 0
+                                const light = Number(currentStation.sensors.lightIntensity.value) || 0
+                                const status: "normal" | "warning" =
+                                  temp > 34 && light > 600 ? "warning" : "normal"
+                                return (
+                                  <Badge variant={getDecisionBadgeVariant(status)} className="text-xs">
+                                    {getDecisionLabel(status)}
+                                  </Badge>
+                                )
+                              })()}
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                              Status: {heatWork.status === "normal" ? "aman terkendali" : "risiko stres panas tinggi"}
+                            <p className="text-gray-700">
+                              {(() => {
+                                const temp = Number(currentStation.sensors.temperature.value) || 0
+                                const light = Number(currentStation.sensors.lightIntensity.value) || 0
+
+                                if (temp > 34 && light > 600) {
+                                  return "Risiko stres panas tinggi, prioritaskan pemasangan naungan dan jadwalkan pekerjaan berat pada pagi/sore hari."
+                                }
+                                if (temp < 22) {
+                                  return "Suhu relatif sejuk, kondisi aman untuk pekerjaan lapangan dan pemeliharaan rutin."
+                                }
+                                return "Kondisi cukup aman, namun tetap perhatikan hidrasi petani dan naungan tanaman di tengah hari."
+                              })()}
                             </p>
-                            <p className="mt-1 text-gray-700">{heatWork.description}</p>
                           </div>
                         </div>
-                          )
-                        })()}
                       </CardContent>
                     </Card>
 
