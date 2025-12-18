@@ -158,7 +158,7 @@ const weatherForecast = [
 const droneData = {
   id: "tello-001",
   name: "DJI Tello",
-  status: "connected",
+  status: "disconnected",
   battery: 85,
   signal: 92,
   altitude: 0,
@@ -335,10 +335,18 @@ export default function Dashboard() {
         const data = await res.json()
         const hours = data?.forecast?.forecastday?.[0]?.hour || []
 
-        // Ambil 6 jam ke depan (tiap 3 jam) supaya mirip layout lama
-        const sampledHours = hours.filter((_: any, idx: number) => idx % 3 === 0).slice(0, 6)
+        // Ambil 5 jam ke depan, mulai dari jam sekarang (dibulatkan ke bawah ke jam)
+        const now = new Date()
+        const currentHour = now.getHours()
 
-        const mapped: WeatherForecastItem[] = sampledHours.map((h: any) => ({
+        const upcomingHours = hours.filter((h: any) => {
+          const hourDate = new Date(h.time)
+          return hourDate.getHours() >= currentHour
+        })
+
+        const selectedHours = upcomingHours.slice(0, 5)
+
+        const mapped: WeatherForecastItem[] = selectedHours.map((h: any) => ({
           time: h.time.split(" ")[1]?.slice(0, 5) || "",
           temp: h.temp_c,
           wind: h.wind_kph,
@@ -389,17 +397,29 @@ export default function Dashboard() {
               temperature: { 
                 value: firebaseData.temperature, 
                 unit: "°C", 
-                status: firebaseData.temperature > 40 ? "warning" : "normal" 
+                status: firebaseData.temperature === 0
+                  ? "error"
+                  : firebaseData.temperature > 40
+                    ? "warning"
+                    : "normal"
               },
               airHumidity: { 
                 value: firebaseData.humidity, 
                 unit: "%", 
-                status: firebaseData.humidity < 30 || firebaseData.humidity > 80 ? "warning" : "normal" 
+                status: firebaseData.humidity === 0
+                  ? "error"
+                  : firebaseData.humidity < 30 || firebaseData.humidity > 80
+                    ? "warning"
+                    : "normal"
               },
               soilMoisture: { 
                 value: firebaseData.soilMoisture, 
                 unit: "%", 
-                status: firebaseData.soilMoisture < 20 ? "warning" : "normal" 
+                status: firebaseData.soilMoisture === 0
+                  ? "error"
+                  : firebaseData.soilMoisture < 20
+                    ? "warning"
+                    : "normal"
               },
               rainIntensity: { 
                 value: firebaseData.rainIntensity, 
@@ -409,7 +429,7 @@ export default function Dashboard() {
               lightIntensity: { 
                 value: firebaseData.ldr, 
                 unit: "Lux", 
-                status: "normal" 
+                status: firebaseData.ldr === 0 ? "error" : "normal" 
               }
             },
             status: firebaseError ? "inactive" : "active",
