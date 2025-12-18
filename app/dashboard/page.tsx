@@ -397,8 +397,9 @@ export default function Dashboard() {
               temperature: { 
                 value: firebaseData.temperature, 
                 unit: "°C", 
+                // 0 dianggap sensor dimatikan / tidak aktif
                 status: firebaseData.temperature === 0
-                  ? "error"
+                  ? "inactive"
                   : firebaseData.temperature > 40
                     ? "warning"
                     : "normal"
@@ -407,7 +408,7 @@ export default function Dashboard() {
                 value: firebaseData.humidity, 
                 unit: "%", 
                 status: firebaseData.humidity === 0
-                  ? "error"
+                  ? "inactive"
                   : firebaseData.humidity < 30 || firebaseData.humidity > 80
                     ? "warning"
                     : "normal"
@@ -416,7 +417,7 @@ export default function Dashboard() {
                 value: firebaseData.soilMoisture, 
                 unit: "%", 
                 status: firebaseData.soilMoisture === 0
-                  ? "error"
+                  ? "inactive"
                   : firebaseData.soilMoisture < 20
                     ? "warning"
                     : "normal"
@@ -429,7 +430,7 @@ export default function Dashboard() {
               lightIntensity: { 
                 value: firebaseData.ldr, 
                 unit: "Lux", 
-                status: firebaseData.ldr === 0 ? "error" : "normal" 
+                status: firebaseData.ldr === 0 ? "inactive" : "normal" 
               }
             },
             status: firebaseError ? "inactive" : "active",
@@ -567,8 +568,8 @@ export default function Dashboard() {
         return "text-green-600"
       case "warning":
         return "text-amber-600"
-      case "error":
-        return "text-red-600"
+      case "inactive":
+        return "text-gray-500"
       default:
         return "text-gray-600"
     }
@@ -580,8 +581,8 @@ export default function Dashboard() {
         return <CheckCircle className="w-4 h-4 text-green-600" />
       case "warning":
         return <AlertTriangle className="w-4 h-4 text-amber-600" />
-      case "error":
-        return <AlertTriangle className="w-4 h-4 text-red-600" />
+      case "inactive":
+        return <Clock className="w-4 h-4 text-gray-500" />
       default:
         return null
     }
@@ -593,8 +594,8 @@ export default function Dashboard() {
         return "bg-green-50"
       case "warning":
         return "bg-amber-50"
-      case "error":
-        return "bg-red-50"
+      case "inactive":
+        return "bg-gray-50"
       default:
         return "bg-gray-50"
     }
@@ -1382,7 +1383,7 @@ export default function Dashboard() {
                         )}
                         {!weatherLoading && !weatherError && weatherForecast.length === 0 && (
                           <p className="text-sm text-gray-500">
-                            Belum ada data prakiraan cuaca yang tersedia.
+                            Belum adaa data prakiran cuaca yang tersedia.
                           </p>
                         )}
                         {!weatherLoading && !weatherError && weatherForecast.length > 0 && (
