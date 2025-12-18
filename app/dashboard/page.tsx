@@ -79,6 +79,8 @@ import { sendDummyData, startDummyDataGenerator } from '@/lib/dummyDataGenerator
 import { timeAgo } from "@/lib/timeAgo";
 import { useEffect } from "react";
 
+const WEATHER_API_KEY = "74a8a2cb36c0465690c85258251812";
+
 // ===== LIGHT INTENSITY DUMMY GENERATOR =====
 const LIGHT_BASE_VALUE = 450.0; // Base lux for indoor auditorium
 const LIGHT_VARIANCE = 5.0; // ±5 lux variance
@@ -211,27 +213,34 @@ const newsArticles = [
   },
 ]
 
+type WeatherForecastItem = {
+  time: string
+  temp: number
+  wind: number
+  rain: number
+  humidity: number
+  iconUrl: string
+  condition: string
+}
+
 // ===== STATION DATA WITH CORRECT 8 SENSORS =====
 const DEFAULT_STATIONS = [
   {
     id: "wisnu",
-    name: "Stasiun Test Wisnu",
+    name: "Stasiun Test SmartFarm",
     location: "Solo",
     status: "active",
-    lastUpdate: "2 menit yang lalu",
+    lastUpdate: Date.now(),
     sensors: {
       temperature: { value: 0, unit: "°C", status: "normal" },
       airHumidity: { value: 0, unit: "%", status: "normal" },
       soilMoisture: { value: 0, unit: "%", status: "normal" },
-      windSpeed: { value: 0, unit: "km/h", status: "normal" },
       rainIntensity: { value: 0, unit: "mm", status: "normal" },
       lightIntensity: { value: 0, unit: "Lux", status: "normal" },
-      solarWatt: { value: 0, unit: "W", status: "normal" },
-      solarVoltage: { value: 0, unit: "V", status: "normal" },
     },
     uptime: "99.2%",
     updateInterval: "30 detik",
-    sensorsNormal: "8/8",
+    sensorsNormal: "5/5",
   },
   {
     id: "test2",
@@ -243,11 +252,8 @@ const DEFAULT_STATIONS = [
       temperature: { value: 33.8, unit: "°C", status: "warning" },
       airHumidity: { value: 62.3, unit: "%", status: "normal" },
       soilMoisture: { value: 28.5, unit: "%", status: "normal" },
-      windSpeed: { value: 4.2, unit: "km/h", status: "normal" },
       rainIntensity: { value: 1.5, unit: "mm", status: "normal" },
       lightIntensity: { value: generateLightIntensity(), unit: "Lux", status: "normal" },
-      solarWatt: { value: 0, unit: "W", status: "normal" },
-      solarVoltage: { value: 0, unit: "V", status: "normal" },
     },
     uptime: "98.7%",
     updateInterval: "30 detik",
@@ -263,11 +269,8 @@ const DEFAULT_STATIONS = [
       temperature: { value: 0, unit: "°C", status: "error" },
       airHumidity: { value: 0, unit: "%", status: "error" },
       soilMoisture: { value: 0, unit: "%", status: "error" },
-      windSpeed: { value: 0, unit: "km/h", status: "error" },
       rainIntensity: { value: 0, unit: "mm", status: "error" },
       lightIntensity: { value: 0, unit: "Lux", status: "error" },
-      solarWatt: { value: 0, unit: "W", status: "error" },
-      solarVoltage: { value: 0, unit: "V", status: "error" },
     },
     uptime: "0%",
     updateInterval: "Tidak Tersedia",
@@ -293,6 +296,9 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState("last7days")
   const [exportFormat, setExportFormat] = useState("csv")
   const [timeRange, setTimeRange] = useState("1hour") // New state for chart time range filter
+  const [weatherForecast, setWeatherForecast] = useState<WeatherForecastItem[]>([])
+  const [weatherLoading, setWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState<string | null>(null)
 
   const { currentData: firebaseData, loading: firebaseLoading, error: firebaseError } = useFirebaseCurrentData('wisnu');
 
@@ -307,6 +313,52 @@ export default function Dashboard() {
   };
 
   const { history: firebaseHistory } = useFirebaseHistory('wisnu', getHistoryLimit());
+
+  // ===== WEATHER API INTEGRATION =====
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        setWeatherLoading(true)
+        setWeatherError(null)
+
+        // Gunakan lokasi Solo sebagai default
+        const location = "Solo"
+        const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(
+          location
+        )}&days=1&aqi=no&alerts=no`
+
+        const res = await fetch(url)
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+
+        const data = await res.json()
+        const hours = data?.forecast?.forecastday?.[0]?.hour || []
+
+        // Ambil 6 jam ke depan (tiap 3 jam) supaya mirip layout lama
+        const sampledHours = hours.filter((_: any, idx: number) => idx % 3 === 0).slice(0, 6)
+
+        const mapped: WeatherForecastItem[] = sampledHours.map((h: any) => ({
+          time: h.time.split(" ")[1]?.slice(0, 5) || "",
+          temp: h.temp_c,
+          wind: h.wind_kph,
+          rain: h.chance_of_rain ?? 0,
+          humidity: h.humidity,
+          iconUrl: `https:${h.condition.icon}`,
+          condition: h.condition.text,
+        }))
+
+        setWeatherForecast(mapped)
+      } catch (err: any) {
+        console.error("Gagal mengambil data cuaca:", err)
+        setWeatherError("Gagal mengambil data cuaca")
+      } finally {
+        setWeatherLoading(false)
+      }
+    }
+
+    fetchWeather()
+  }, [])
 
   // ===== LIGHT INTENSITY GENERATOR INTERVAL =====
   useEffect(() => {
@@ -349,11 +401,6 @@ export default function Dashboard() {
                 unit: "%", 
                 status: firebaseData.soilMoisture < 20 ? "warning" : "normal" 
               },
-              windSpeed: { 
-                value: firebaseData.windSpeed_kmh, 
-                unit: "km/h", 
-                status: firebaseData.windSpeed_kmh > 25 ? "warning" : "normal" 
-              },
               rainIntensity: { 
                 value: firebaseData.rainIntensity, 
                 unit: "mm", 
@@ -363,22 +410,10 @@ export default function Dashboard() {
                 value: firebaseData.ldr, 
                 unit: "Lux", 
                 status: "normal" 
-              },
-              solarWatt: { 
-                value: 0, 
-                unit: "W", 
-                status: "normal" 
-              },
-              solarVoltage: { 
-                value: 0, 
-                unit: "V", 
-                status: "normal" 
-              },
+              }
             },
             status: firebaseError ? "inactive" : "active",
-            lastUpdate: firebaseData.timestamp 
-              ? timeAgo(firebaseData.timestamp)
-              : "Tidak Diketahui"
+            lastUpdate: firebaseData.timestamp || Date.now()
           };
         }
         
@@ -448,15 +483,6 @@ export default function Dashboard() {
         soilMoistureData.push({
           time: formatTimestamp(item.timestamp),
           value: item.soilMoisture
-        });
-      });
-
-      // Update wind speed data
-      windSpeedData.splice(0, windSpeedData.length);
-      sampledHistory.forEach((item) => {
-        windSpeedData.push({
-          time: formatTimestamp(item.timestamp),
-          value: item.windSpeed_kmh || 0
         });
       });
 
@@ -552,6 +578,12 @@ export default function Dashboard() {
       default:
         return "bg-gray-50"
     }
+  }
+
+  const calculateSensorsNormal = (sensors: Record<string, { status: string }>) => {
+    const total = Object.keys(sensors).length
+    const normalCount = Object.values(sensors).filter((s) => s.status === "normal").length
+    return `${normalCount}/${total}`
   }
 
   // ===== SENSOR CARD COMPONENT =====
@@ -652,7 +684,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center">
             <Clock className="w-3 h-3 mr-1" />
-            {station.lastUpdate}
+            {typeof station.lastUpdate === "number" ? timeAgo(station.lastUpdate) : station.lastUpdate}
           </div>
         </div>
       </CardContent>
@@ -800,7 +832,10 @@ export default function Dashboard() {
                   </h1>
                   {selectedStation && currentStation && (
                     <p className="text-sm text-gray-500">
-                      Lokasi: {currentStation.location} • Terakhir diperbarui: {currentStation.lastUpdate}
+                      Lokasi: {currentStation.location} • Terakhir diperbarui:{" "}
+                      {typeof currentStation.lastUpdate === "number"
+                        ? timeAgo(currentStation.lastUpdate)
+                        : currentStation.lastUpdate}
                     </p>
                   )}
                 </div>
@@ -1072,11 +1107,11 @@ export default function Dashboard() {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Status Sensor</p>
                           <p className="text-lg font-bold text-gray-900">
-                            {currentStation.sensorsNormal} Sensor Normal
+                            {calculateSensorsNormal(currentStation.sensors)} Sensor Normal
                           </p>
                         </div>
                       </div>
-                      {currentStation.sensorsNormal === "8/8" ? (
+                      {calculateSensorsNormal(currentStation.sensors) === "5/5" ? (
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       ) : (
                         <AlertTriangle className="w-5 h-5 text-amber-600" />
@@ -1138,7 +1173,7 @@ export default function Dashboard() {
                     <TabsTrigger value="drone">Drone</TabsTrigger>
                   </TabsList>
                   <TabsContent value="sensors" className="space-y-6">
-                    {/* ===== 8 SENSOR CARDS WITH CORRECT DATA ===== */}
+                    {/* ===== SENSOR CARDS WITH DATA DARI FIREBASE ===== */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <SensorCard
                         title="Temperatur"
@@ -1171,16 +1206,6 @@ export default function Dashboard() {
                         data={soilMoistureData}
                       />
                       <SensorCard
-                        title="Kecepatan Angin"
-                        value={Number(currentStation.sensors.windSpeed.value).toFixed(1)}
-                        unit="km/h"
-                        icon={Wind}
-                        color="text-cyan-600"
-                        bgColor="bg-cyan-50"
-                        status={currentStation.sensors.windSpeed.status}
-                        data={windSpeedData}
-                      />
-                      <SensorCard
                         title="Curah Hujan"
                         value={Number(currentStation.sensors.rainIntensity.value).toFixed(1)}
                         unit="mm"
@@ -1199,26 +1224,6 @@ export default function Dashboard() {
                         bgColor="bg-orange-50"
                         status={currentStation.sensors.lightIntensity.status}
                         data={lightIntensityData}
-                      />
-                      <SensorCard
-                        title="Watt Panel Surya"
-                        value={Number(currentStation.sensors.solarWatt.value).toFixed(1)}
-                        unit="W"
-                        icon={Zap}
-                        color="text-yellow-600"
-                        bgColor="bg-yellow-50"
-                        status={currentStation.sensors.solarWatt.status}
-                        data={[]}
-                      />
-                      <SensorCard
-                        title="Tegangan Panel Surya"
-                        value={Number(currentStation.sensors.solarVoltage.value).toFixed(1)}
-                        unit="V"
-                        icon={Gauge}
-                        color="text-purple-600"
-                        bgColor="bg-purple-50"
-                        status={currentStation.sensors.solarVoltage.status}
-                        data={[]}
                       />
                     </div>
 
@@ -1337,39 +1342,65 @@ export default function Dashboard() {
                   </TabsContent>
 
                   <TabsContent value="forecast">
-                    {/* Weather Forecast */}
+                    {/* Weather Forecast dari WeatherAPI */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
                           <Sun className="w-5 h-5 text-orange-600" />
                           <span>Prakiraan Cuaca</span>
                         </CardTitle>
-                        <CardDescription>Prakiraan cuaca 24 jam untuk {currentStation.location}</CardDescription>
+                        <CardDescription>
+                          Prakiraan cuaca 24 jam untuk Solo (data dari WeatherAPI.com)
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                          {weatherForecast.map((forecast, index) => (
-                            <div key={index} className="text-center p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm font-medium text-gray-600">{forecast.time}</p>
-                              <div className="text-2xl my-2">{forecast.icon}</div>
-                              <p className="text-lg font-bold text-gray-900">{forecast.temp}°C</p>
-                              <div className="grid grid-cols-2 gap-1 mt-2">
-                                <div className="text-xs text-gray-500">
-                                  <Wind className="w-3 h-3 inline mr-1" />
-                                  {forecast.wind} km/h
+                        {weatherLoading && (
+                          <p className="text-sm text-gray-500">Mengambil data cuaca...</p>
+                        )}
+                        {!weatherLoading && weatherError && (
+                          <p className="text-sm text-red-600">{weatherError}</p>
+                        )}
+                        {!weatherLoading && !weatherError && weatherForecast.length === 0 && (
+                          <p className="text-sm text-gray-500">
+                            Belum ada data prakiraan cuaca yang tersedia.
+                          </p>
+                        )}
+                        {!weatherLoading && !weatherError && weatherForecast.length > 0 && (
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            {weatherForecast.map((forecast, index) => (
+                              <div key={index} className="text-center p-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm font-medium text-gray-600">{forecast.time}</p>
+                                <div className="my-2 flex flex-col items-center">
+                                  <img
+                                    src={forecast.iconUrl}
+                                    alt={forecast.condition}
+                                    className="w-10 h-10 mb-1"
+                                  />
+                                  <span className="text-xs text-gray-500 line-clamp-1">
+                                    {forecast.condition}
+                                  </span>
                                 </div>
-                                <div className="text-xs text-blue-600">
-                                  <Droplets className="w-3 h-3 inline mr-1" />
-                                  {forecast.humidity}%
+                                <p className="text-lg font-bold text-gray-900">
+                                  {forecast.temp.toFixed(1)}°C
+                                </p>
+                                <div className="grid grid-cols-2 gap-1 mt-2">
+                                  <div className="text-xs text-gray-500">
+                                    <Wind className="w-3 h-3 inline mr-1" />
+                                    {forecast.wind.toFixed(1)} km/h
+                                  </div>
+                                  <div className="text-xs text-blue-600">
+                                    <Droplets className="w-3 h-3 inline mr-1" />
+                                    {forecast.humidity}%
+                                  </div>
+                                </div>
+                                <div className="text-xs text-blue-600 mt-1">
+                                  <CloudRain className="w-3 h-3 inline mr-1" />
+                                  {forecast.rain}%
                                 </div>
                               </div>
-                              <div className="text-xs text-blue-600 mt-1">
-                                <CloudRain className="w-3 h-3 inline mr-1" />
-                                {forecast.rain}%
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </TabsContent>
