@@ -1195,7 +1195,7 @@ export default function Dashboard() {
                   </TabsList>
                   <TabsContent value="sensors" className="space-y-6">
                     {/* ===== SENSOR CARDS WITH DATA DARI FIREBASE ===== */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <SensorCard
                         title="Temperatur"
                         value={Number(currentStation.sensors.temperature.value).toFixed(1)}
