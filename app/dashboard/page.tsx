@@ -1291,8 +1291,8 @@ export default function Dashboard() {
                               {irrigationTrigger && (
                                 <div className="p-3 rounded-lg bg-green-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">Penyiraman / Irigasi</p>
-                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
+                                    <p className="font-semibold text-gray-900">Penyiraman</p>
+                                    <Badge variant="default" className="text-xs">
                                       {soil < 15 ? "BUTUH SEGERA" : "PERLU PENYIRAMAN"}
                                     </Badge>
                                   </div>
@@ -1312,8 +1312,8 @@ export default function Dashboard() {
                               {sprayingTrigger && (
                                 <div className="p-3 rounded-lg bg-amber-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">Penyemprotan Pupuk / Pestisida</p>
-                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
+                                    <p className="font-semibold text-gray-900">Penyemprotan</p>
+                                    <Badge variant="secondary" className="text-xs">
                                       TUNDA PENYEMPROTAN
                                     </Badge>
                                   </div>
@@ -1327,19 +1327,17 @@ export default function Dashboard() {
                                 </div>
                               )}
 
-                              {/* Stres panas & waktu kerja - hanya kalau kombinasi ekstrim */}
+                              {/* Stres panas - hanya kalau kombinasi ekstrim */}
                               {heatTrigger && (
                                 <div className="p-3 rounded-lg bg-red-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">
-                                      Stres Panas Tanaman & Waktu Kerja Petani
-                                    </p>
-                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
+                                    <p className="font-semibold text-gray-900">Stres Panas</p>
+                                    <Badge variant="destructive" className="text-xs">
                                       WASPADA PANAS
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-gray-500 mb-1">
-                                    Suhu: {temp.toFixed(1)}°C • Intensitas cahaya (LDR): {light.toFixed(1)}
+                                    Suhu: {temp.toFixed(1)}°C • Intensitas cahaya: {light.toFixed(1)} Lux
                                   </p>
                                   <p className="text-gray-700">
                                     Suhu dan intensitas cahaya tinggi berpotensi menyebabkan stres panas. Pindahkan
