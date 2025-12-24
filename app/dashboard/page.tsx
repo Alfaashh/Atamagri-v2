@@ -250,7 +250,7 @@ const DEFAULT_STATIONS = [
     lastUpdate: "5 hari yang lalu",
     sensors: {
       temperature: { value: 33.8, unit: "°C", status: "warning" },
-      airHumidity: { value: 62.3, unit: "%", status: "normal" },
+      airHumidity: { value: 62.3, unit: "%", status: "warning" },
       soilMoisture: { value: 28.5, unit: "%", status: "normal" },
       rainIntensity: { value: 1.5, unit: "mm", status: "normal" },
       lightIntensity: { value: generateLightIntensity(), unit: "Lux", status: "normal" },
@@ -397,10 +397,9 @@ export default function Dashboard() {
               temperature: { 
                 value: firebaseData.temperature, 
                 unit: "°C", 
-                // 0 dianggap sensor dimatikan / tidak aktif
                 status: firebaseData.temperature === 0
                   ? "inactive"
-                  : firebaseData.temperature > 40
+                  : firebaseData.temperature > 32
                     ? "warning"
                     : "normal"
               },
@@ -409,7 +408,7 @@ export default function Dashboard() {
                 unit: "%", 
                 status: firebaseData.humidity === 0
                   ? "inactive"
-                  : firebaseData.humidity < 30 || firebaseData.humidity > 80
+                  : firebaseData.humidity > 60
                     ? "warning"
                     : "normal"
               },
@@ -418,19 +417,23 @@ export default function Dashboard() {
                 unit: "%", 
                 status: firebaseData.soilMoisture === 0
                   ? "inactive"
-                  : firebaseData.soilMoisture < 20
+                  : firebaseData.soilMoisture < 25
                     ? "warning"
                     : "normal"
               },
               rainIntensity: { 
                 value: firebaseData.rainIntensity, 
                 unit: "mm", 
-                status: firebaseData.isRaining ? "warning" : "normal" 
+                status: firebaseData.rainIntensity > 100 ? "warning" : "normal" 
               },
               lightIntensity: { 
                 value: firebaseData.ldr, 
                 unit: "Lux", 
-                status: firebaseData.ldr === 0 ? "inactive" : "normal" 
+                status: firebaseData.ldr === 0
+                  ? "inactive"
+                  : firebaseData.ldr > 600
+                    ? "warning"
+                    : "normal"
               }
             },
             status: firebaseError ? "inactive" : "active",
@@ -627,7 +630,7 @@ export default function Dashboard() {
     data,
   }: {
     title: string
-    value: number
+    value: any
     unit: string
     icon: any
     color: string
@@ -642,7 +645,7 @@ export default function Dashboard() {
             <p className="text-sm font-medium text-gray-600">{title}</p>
             <div className="flex items-center">
               <p className={`text-2xl font-bold ${color}`}>
-                {value} <span className="text-sm font-normal">{unit}</span>
+                {Number(value).toFixed(1)} <span className="text-sm font-normal">{unit}</span>
               </p>
               <div className="ml-2">{getStatusIcon(status)}</div>
             </div>
@@ -1206,7 +1209,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <SensorCard
                         title="Temperatur"
-                        value={Number(currentStation.sensors.temperature.value).toFixed(1)}
+                        value={Number(currentStation.sensors.temperature.value)}
                         unit="°C"
                         icon={Thermometer}
                         color="text-blue-600"
@@ -1216,7 +1219,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Kelembaban Udara"
-                        value={Number(currentStation.sensors.airHumidity.value).toFixed(1)}
+                        value={Number(currentStation.sensors.airHumidity.value)}
                         unit="%"
                         icon={Droplets}
                         color="text-green-600"
@@ -1226,7 +1229,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Kelembaban Tanah"
-                        value={Number(currentStation.sensors.soilMoisture.value).toFixed(1)}
+                        value={Number(currentStation.sensors.soilMoisture.value)}
                         unit="%"
                         icon={TreePine}
                         color="text-amber-600"
@@ -1236,7 +1239,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Curah Hujan"
-                        value={Number(currentStation.sensors.rainIntensity.value).toFixed(1)}
+                        value={Number(currentStation.sensors.rainIntensity.value)}
                         unit="mm"
                         icon={CloudRain}
                         color="text-indigo-600"
@@ -1246,7 +1249,7 @@ export default function Dashboard() {
                       />
                       <SensorCard
                         title="Intensitas Cahaya"
-                        value={Number(currentStation.sensors.lightIntensity.value).toFixed(1)}
+                        value={Number(currentStation.sensors.lightIntensity.value)}
                         unit="Lux"
                         icon={Sun}
                         color="text-orange-600"
@@ -1291,8 +1294,8 @@ export default function Dashboard() {
                               {irrigationTrigger && (
                                 <div className="p-3 rounded-lg bg-green-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">Penyiraman</p>
-                                    <Badge variant="default" className="text-xs">
+                                    <p className="font-semibold text-gray-900">Penyiraman / Irigasi</p>
+                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
                                       {soil < 15 ? "BUTUH SEGERA" : "PERLU PENYIRAMAN"}
                                     </Badge>
                                   </div>
@@ -1312,8 +1315,8 @@ export default function Dashboard() {
                               {sprayingTrigger && (
                                 <div className="p-3 rounded-lg bg-amber-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">Penyemprotan</p>
-                                    <Badge variant="secondary" className="text-xs">
+                                    <p className="font-semibold text-gray-900">Penyemprotan Pupuk / Pestisida</p>
+                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
                                       TUNDA PENYEMPROTAN
                                     </Badge>
                                   </div>
@@ -1327,17 +1330,19 @@ export default function Dashboard() {
                                 </div>
                               )}
 
-                              {/* Stres panas - hanya kalau kombinasi ekstrim */}
+                              {/* Stres panas & waktu kerja - hanya kalau kombinasi ekstrim */}
                               {heatTrigger && (
                                 <div className="p-3 rounded-lg bg-red-50">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900">Stres Panas</p>
-                                    <Badge variant="destructive" className="text-xs">
+                                    <p className="font-semibold text-gray-900">
+                                      Stres Panas Tanaman & Waktu Kerja Petani
+                                    </p>
+                                    <Badge variant={getDecisionBadgeVariant("warning")} className="text-xs">
                                       WASPADA PANAS
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-gray-500 mb-1">
-                                    Suhu: {temp.toFixed(1)}°C • Intensitas cahaya: {light.toFixed(1)} Lux
+                                    Suhu: {temp.toFixed(1)}°C • Intensitas cahaya (LDR): {light.toFixed(1)}
                                   </p>
                                   <p className="text-gray-700">
                                     Suhu dan intensitas cahaya tinggi berpotensi menyebabkan stres panas. Pindahkan

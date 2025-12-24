@@ -9,6 +9,7 @@ export interface SensorData {
   soilMoistureRaw: number;
   isRaining: boolean;
   rainIntensity: number;
+  ldr: number;
   timestamp: number;
 }
 
