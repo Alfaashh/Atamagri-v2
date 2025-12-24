@@ -432,7 +432,7 @@ export default function Dashboard() {
                 status: firebaseData.ldr === 0
                   ? "inactive"
                   : firebaseData.ldr > 600
-                    ? "warning"
+                    ? "normal"
                     : "normal"
               }
             },
