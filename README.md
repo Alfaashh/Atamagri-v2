@@ -241,9 +241,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-**Project Link**: [https://github.com/yourusername/atamagri-v2](https://github.com/yourusername/atamagri-v2)
-
-**Live Demo**: [https://your-deployment-url.com](https://your-deployment-url.com)
+**Project Link**: [https://github.com/alfaashh/atamagri-v2](https://github.com/yourusername/atamagri-v2)
 
 ---
 
