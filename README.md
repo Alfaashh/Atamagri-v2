@@ -18,6 +18,8 @@
 
 ---
 
+![alt text](https://github.com/Alfaashh/Atamagri-v2/blob/master/img/dashboard.png?raw=true)
+
 ## 📋 Overview
 
 **Atamagri** is a cutting-edge web application designed to revolutionize modern agriculture through intelligent drone management and AI-powered crop monitoring. Built with Next.js and Firebase, it provides real-time monitoring, automated disease detection, and comprehensive farm management tools for precision agriculture.
